@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notícias | IPM NEWS</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+    <header class="main-header">
+        <div class="header-top">
+            <div class="logo">
+                <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo" onerror="this.src='https://via.placeholder.com/50?text=IPM'">
+                <span>IPM NEWS</span>
+            </div>
+            <div class="social-icons">
+                <a href="#"><i class="fab fa-facebook-f"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="{% url 'pages:index' %}">Início</a></li>
+                <li><a href="{% url 'pages:notice' %}" class="active">Notícias</a></li>
+                <li><a href="{% url 'pages:category_news' 'Esportes' %}" class="{% if categoria_ativa == 'Esportes' %}active{% endif %}">Esportes</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container" style="margin-top: 4rem;">
+        <h2 class="section-title">
+            <i class="fas fa-newspaper"></i> 
+            {% if categoria_ativa %}NOTÍCIAS EM {{ categoria_ativa|upper }}{% else %}TODAS AS NOTÍCIAS{% endif %}
+        </h2>
+        
+        <div class="main-wrapper" style="grid-template-columns: 1fr;">
+            <section class="news-feed">
+                <div class="highlight-cards" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
+                    {% for noticia in noticias %}
+                    <article class="card">
+                        <div class="card-img-wrapper">
+                            <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}" alt="{{ noticia.titulo }}" onerror="this.src='https://via.placeholder.com/400x300?text=Alpha+News'">
+                            <span class="category-badge">{{ noticia.categoria.categoria }}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3><a href="{% url 'pages:noticia_detail' noticia.id %}">{{ noticia.titulo }}</a></h3>
+                            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">{{ noticia.subtitulo|truncatechars:120 }}</p>
+                            <div class="meta">
+                                <span><i class="fas fa-calendar-alt"></i> {{ noticia.publicado_em|date:"d M Y" }}</span>
+                                <a href="{% url 'pages:noticia_detail' noticia.id %}" style="color: var(--accent); font-weight: 600;">Ler mais <i class="fas fa-chevron-right" style="font-size: 0.8rem;"></i></a>
+                            </div>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <p style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">Nenhuma notícia encontrada nesta categoria.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Pagination -->
+                {% if is_paginated %}
+                <nav class="pagination-container" style="display: flex; justify-content: center; gap: 1rem; margin-top: 4rem;">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="btn-primary" style="padding: 0.8rem 1.5rem;"><i class="fas fa-chevron-left"></i> Anterior</a>
+                    {% endif %}
+                    
+                    <span style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted);">
+                        Página <strong>{{ page_obj.number }}</strong> de {{ page_obj.paginator.num_pages }}
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="btn-primary" style="padding: 0.8rem 1.5rem;">Próxima <i class="fas fa-chevron-right"></i></a>
+                    {% endif %}
+                </nav>
+                {% endif %}
+            </section>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-info">
+                    <h4>IPM</h4>
+                    <p>Formando líderes através da educação e informação.</p>
+                </div>
+                <nav class="footer-nav">
+                    <h4>EXPLORAR</h4>
+                    <ul>
+                        <li><a href="{% url 'pages:index' %}">Início</a></li>
+                        <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jornal IPM. Design Premium.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
