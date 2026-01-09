@@ -141,9 +141,6 @@
     opacity: 1;
 }
 
-.card:hover {
-    animation: pulse-glow 2s infinite;
-}
 
 /* Shimmer Effect for Loading States */
 .shimmer-effect {
@@ -191,7 +188,6 @@
     background: rgba(59, 130, 246, 0.1);
     border: 1px solid rgba(59, 130, 246, 0.3);
     transition: all 0.3s ease;
-    color: #60a5fa !important;
 }
 
 .social-icons a:hover {

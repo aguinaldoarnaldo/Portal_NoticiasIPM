@@ -1,7 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-/* ===== SISTEMA DE TEMA AUTOMÁTICO ===== */
-/* Light: 6h - 18h | Dark: 18h - 6h | Padrão: Light */
+/* ===== SISTEMA DE TEMA MANUAL ===== */
 
 :root {
     --accent: #3b82f6;
@@ -12,23 +11,22 @@
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --theme-transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
-}
 
-/* Tema Light (Padrão) - 6h às 18h */
-body, body[data-theme="light"] {
-    --primary: #f8fafc;
-    --primary-light: #e2e8f0;
+    /* Tema Light (Padrão) */
+    --primary: #ffffff;
+    --primary-light: #f8fafc;
     --text-main: #0f172a;
-    --text-muted: #475569;
-    --bg-main: #f1f5f9;
-    --card-bg: rgba(255, 255, 255, 0.9);
-    --glass-border: rgba(0, 0, 0, 0.1);
-    --header-bg: rgba(248, 250, 252, 0.9);
-    --footer-bg: #e2e8f0;
+    --text-muted: #64748b;
+    --bg-main: #f8fafc;
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: rgba(0, 0, 0, 0.08);
+    --header-bg: rgba(255, 255, 255, 0.85);
+    --footer-bg: #f1f5f9;
+    --social-color: #475569;
 }
 
-/* Tema Dark - 18h às 6h */
-body[data-theme="dark"] {
+/* Tema Dark */
+[data-theme="dark"] {
     --primary: #0f172a;
     --primary-light: #1e293b;
     --text-main: #f8fafc;
@@ -38,6 +36,7 @@ body[data-theme="dark"] {
     --glass-border: rgba(255, 255, 255, 0.1);
     --header-bg: rgba(15, 23, 42, 0.8);
     --footer-bg: #0f172a;
+    --social-color: #60a5fa;
 }
 
 * {
@@ -466,8 +465,8 @@ a {
 }
 
 .social-icons a {
-    font-size: 1.2rem;
-    color: var(--text-muted);
+    font-size: 1.1rem;
+    color: var(--social-color);
     transition: var(--transition);
 }
 
@@ -485,6 +484,28 @@ a {
     gap: 1.5rem; /* Gap between social icons and menu toggle */
 }
 
+/* Theme Toggle Button */
+.theme-toggle {
+    background: transparent;
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1.1rem;
+}
+
+.theme-toggle:hover {
+    background: rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
+    border-color: var(--accent);
+}
+
 /* Menu Toggle (Hamburger) */
 .menu-toggle {
     display: none;
@@ -494,11 +515,11 @@ a {
     background: transparent;
     border: none;
     padding: 0;
-    z-index: 2000; /* Higher z-index */
-    height: 48px;
-    width: 48px;
+    z-index: 2000;
+    height: 40px;
+    width: 40px;
     color: var(--text-main);
-    pointer-events: auto; /* Explicitly allow clicks */
+    pointer-events: auto;
 }
 
 .menu-toggle i {

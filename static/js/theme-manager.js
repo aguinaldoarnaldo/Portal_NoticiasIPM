@@ -1,96 +1,103 @@
 /**
- * IPM Notícias - Sistema de Tema Automático
- * Regras:
- * - 6h às 18h: Tema Light (padrão)
- * - 18h às 6h: Tema Dark
+ * IPM Notícias - Gerenciador de Tema Manual (V2)
+ * Corrigido para funcionar corretamente no Chrome/Edge independente da posição do script.
  */
 
 (function() {
     'use strict';
 
-    const LIGHT_START = 6;  // 6:00
-    const DARK_START = 18;  // 18:00
+    const STORAGE_KEY = 'ipm-theme';
+    const THEMES = {
+        LIGHT: 'light',
+        DARK: 'dark'
+    };
 
     /**
-     * Determina o tema baseado na hora atual
-     * @returns {string} 'light' ou 'dark'
+     * Obtém o tema salvo ou o padrão
      */
-    function getThemeByTime() {
-        const hour = new Date().getHours();
-        // Das 6h às 17h59 = Light, das 18h às 5h59 = Dark
-        if (hour >= LIGHT_START && hour < DARK_START) {
-            return 'light';
+    function getSavedTheme() {
+        try {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return (saved === THEMES.DARK) ? THEMES.DARK : THEMES.LIGHT;
+        } catch (e) {
+            return THEMES.LIGHT;
         }
-        return 'dark';
     }
 
     /**
-     * Aplica o tema ao body
-     * @param {string} theme - 'light' ou 'dark'
+     * Aplica o tema ao elemento raiz (HTML) para evitar erros no Chrome
      */
     function applyTheme(theme) {
-        document.body.setAttribute('data-theme', theme);
-        console.log(`[IPM Tema] Tema ${theme} aplicado às ${new Date().toLocaleTimeString()}`);
-    }
-
-    /**
-     * Calcula milissegundos até a próxima mudança de tema
-     * @returns {number} milissegundos
-     */
-    function getMillisecondsUntilNextChange() {
-        const now = new Date();
-        const hour = now.getHours();
+        // Usar documentElement (html) é mais seguro que o body para scripts no head
+        document.documentElement.setAttribute('data-theme', theme);
+        // Também aplicar ao body se já existir
+        if (document.body) {
+            document.body.setAttribute('data-theme', theme);
+        }
         
-        let targetHour;
-        if (hour >= DARK_START || hour < LIGHT_START) {
-            // Estamos no período dark, próxima mudança às 6h
-            targetHour = LIGHT_START;
+        try {
+            localStorage.setItem(STORAGE_KEY, theme);
+        } catch (e) {}
+
+        // Atualizar ícone do botão se o DOM já estiver pronto
+        const updateIcon = () => {
+            const toggleBtn = document.getElementById('theme-toggle');
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('i');
+                if (icon) {
+                    icon.className = theme === THEMES.DARK ? 'fas fa-sun' : 'fas fa-moon';
+                }
+            }
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', updateIcon);
         } else {
-            // Estamos no período light, próxima mudança às 18h
-            targetHour = DARK_START;
+            updateIcon();
         }
-
-        const target = new Date();
-        target.setHours(targetHour, 0, 0, 0);
-        
-        // Se o horário alvo já passou hoje, adicionar 1 dia
-        if (target <= now) {
-            target.setDate(target.getDate() + 1);
-        }
-
-        return target - now;
     }
 
     /**
-     * Agenda a próxima mudança de tema
+     * Alterna entre os temas
      */
-    function scheduleNextChange() {
-        const msUntilChange = getMillisecondsUntilNextChange();
-        const minutesUntilChange = Math.round(msUntilChange / 60000);
-        
-        console.log(`[IPM Tema] Próxima mudança de tema em ${minutesUntilChange} minutos`);
-        
-        setTimeout(function() {
-            applyTheme(getThemeByTime());
-            scheduleNextChange(); // Agendar a próxima mudança
-        }, msUntilChange);
+    function toggleTheme(e) {
+        if (e) e.preventDefault();
+        const currentTheme = document.documentElement.getAttribute('data-theme') || THEMES.LIGHT;
+        const newTheme = currentTheme === THEMES.DARK ? THEMES.LIGHT : THEMES.DARK;
+        applyTheme(newTheme);
     }
 
     /**
-     * Inicializa o sistema de tema
+     * Inicialização robusta
      */
     function init() {
-        // Aplicar tema inicial
-        applyTheme(getThemeByTime());
+        const initialTheme = getSavedTheme();
+        applyTheme(initialTheme);
         
-        // Agendar próxima mudança automática
-        scheduleNextChange();
+        const setupListener = () => {
+            const toggleBtn = document.getElementById('theme-toggle');
+            if (toggleBtn) {
+                // Remover se já existir para evitar duplicados
+                toggleBtn.removeEventListener('click', toggleTheme);
+                toggleBtn.addEventListener('click', toggleTheme);
+                console.log("[IPM Tema] Listener configurado.");
+            }
+        };
+
+        // Ouvir mudanças no localStorage vindas de outras abas
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY) {
+                applyTheme(e.newValue || THEMES.LIGHT);
+            }
+        });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupListener);
+        } else {
+            setupListener();
+        }
     }
 
-    // Executar quando o DOM estiver pronto
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
+    // Execução imediata
+    init();
 })();
