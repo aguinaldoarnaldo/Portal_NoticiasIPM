@@ -26,6 +26,9 @@
                 <a href="#"><i class="fab fa-twitter"></i></a>
                 <a href="#"><i class="fab fa-instagram"></i></a>
             </div>
+            <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
         <nav class="main-nav">
             <ul>
@@ -158,6 +161,7 @@
         </div>
     </footer>
 
+    <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script>
         // Card Animation Index - for staggered animations
         document.querySelectorAll('.card').forEach((card, index) => {

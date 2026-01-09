@@ -19,13 +19,16 @@
             <div class="logo">
                 <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
                     onerror="this.src='https://via.placeholder.com/50?text=IPM'">
-                <span>IPM NEWS</span>
+                <span>IPM Noticias</span>
             </div>
             <div class="social-icons">
                 <a href="#"><i class="fab fa-facebook-f"></i></a>
                 <a href="#"><i class="fab fa-twitter"></i></a>
                 <a href="#"><i class="fab fa-instagram"></i></a>
             </div>
+            <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
+                <i class="fas fa-bars"></i>
+            </button>
         </div>
         <nav class="main-nav">
             <ul>
@@ -116,6 +119,7 @@
         </div>
     </footer>
 
+    <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script>
         // Card animations
         document.querySelectorAll('.card').forEach((card, index) => {
