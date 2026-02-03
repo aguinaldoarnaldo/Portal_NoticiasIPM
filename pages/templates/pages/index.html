@@ -15,66 +15,244 @@
 <body>
 
     <header class="main-header">
-        <div class="header-top">
-            <div class="logo">
+        <!-- University Top Bar -->
+        <div class="header-top-bar">
+            <div class="container header-top-inner">
+                <div class="header-contact">
+                    <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
+                    <span><i class="fas fa-phone"></i> +244 923 456 789</span>
+                </div>
+                <div class="header-links">
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container header-main">
+            <a href="{% url 'pages:index' %}" class="logo">
                 <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
-                    onerror="this.src='https://via.placeholder.com/50?text=IPM'">
-                <span>IPM Noticias</span>
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
-            <button id="theme-toggle" class="theme-toggle" aria-label="Alternar Tema">
-                <i class="fas fa-moon"></i>
-            </button>
+                    onerror="this.src='https://via.placeholder.com/60?text=IPM'">
+                <div class="logo-text">
+                    <span class="logo-title">INSTITUTO POLITÉCNICO</span>
+                    <span class="logo-subtitle">DO MAYOMBE</span>
+                </div>
+            </a>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'pages:index' %}" class="active">Início</a></li>
+                    <li><a href="{% url 'pages:index' %}#sobre">Sobre o IPM</a></li>
+                    <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
+                    <li><a href="{% url 'pages:index' %}#cursos">Cursos</a></li>
+                    <li><a href="{% url 'pages:eventos' %}">Eventos</a></li>
+                    <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
+                </ul>
+            </nav>
             <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{% url 'pages:index' %}" class="active">Início</a></li>
-                <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
-                <li><a href="{% url 'pages:category_news' 'Esportes' %}">Esportes</a></li>
-            </ul>
-        </nav>
     </header>
+    {% block hero %}{% endblock %}
+    {% block content %}
+    <style>
+        /* Slider Specific Styles */
+        .slider-section {
+            position: relative;
+            height: 75vh; /* Taller on desktop to show more of the image */
+            min-height: 500px;
+            max-height: 750px;
+            background-color: #000;
+            overflow: hidden;
+        }
+        
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+            display: flex;
+            align-items: flex-end; 
+            z-index: 1;
+        }
 
-    {% with noticias|first as latest %}
-    {% if latest %}
-    <section class="hero-section">
-        <img src="{% if latest.imagem %}{{ latest.imagem.url }}{% else %}{% static 'images/hero-fallback.jpg' %}{% endif %}"
-            alt="{{ latest.titulo }}" class="hero-bg"
-            onerror="this.src='https://via.placeholder.com/1920x1080?text=Alpha+News'">
-        <div class="hero-content">
-            <span class="category-badge">{{ latest.categoria.categoria }}</span>
-            <h1>{{ latest.titulo }}</h1>
-            <p>{{ latest.subtitulo|default:latest.conteudo|truncatewords:20 }}</p>
-            <a href="{% url 'pages:noticia_detail' latest.id %}" class="btn-read-more">Ler mais <i
-                    class="fas fa-arrow-right"></i></a>
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center 25%; /* Shows more of the top/middle part of the photo */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            transition: transform 8s linear; /* Slow zoom effect */
+            transform: scale(1.1);
+        }
+        
+        .slide.active {
+            opacity: 1;
+            z-index: 2;
+        }
+
+        .slide.active img {
+            transform: scale(1); /* Zooms out slowly when active */
+        }
+        
+        .slide-overlay {
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 25%, transparent 50%);
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+        
+        .slide-content {
+            position: relative;
+            z-index: 3;
+            width: 100%;
+            padding: 4rem 5%;
+            color: #fff;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .slide-badge {
+            background-color: var(--uan-yellow);
+            color: var(--uan-blue);
+            padding: 0.35rem 1rem;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 1rem;
+            letter-spacing: 1px;
+        }
+        
+        .slide-content h1 {
+            font-size: clamp(2.2rem, 6vw, 4rem);
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            line-height: 1.1;
+            font-weight: 800;
+        }
+        
+        .slide-content p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            max-width: 850px;
+            color: rgba(255, 255, 255, 0.95);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .slider-nav {
+            position: absolute;
+            bottom: 4rem;
+            right: 5%;
+            z-index: 10;
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .slider-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 2px solid transparent;
+        }
+        
+        .slider-dot.active {
+            background: var(--uan-yellow);
+            transform: scale(1.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+        }
+
+        /* Mobile Adjustments for Slider */
+        @media (max-width: 768px) {
+            .slider-section {
+                height: 55vh;
+                min-height: 380px;
+            }
+            .slide-content {
+                padding-bottom: 6rem;
+                text-align: center;
+            }
+            .slide-content h1 {
+                font-size: 2rem;
+            }
+            .slide-content p {
+                font-size: 1rem;
+                margin: 0 auto 1.5rem;
+            }
+            .slider-nav {
+                bottom: 2rem;
+                right: 50%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+
+    <section class="slider-section">
+        <div class="slider-container" id="heroSlider">
+            {% for noticia in banner_noticias %}
+            <div class="slide {% if forloop.first %}active{% endif %}">
+                <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/hero-fallback.jpg' %}{% endif %}" alt="{{ noticia.titulo }}">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-badge">{{ noticia.categoria.categoria }}</span>
+                    <h1><a href="{% url 'pages:noticia_detail' noticia.id %}" style="color: white;">{{ noticia.titulo }}</a></h1>
+                    <p>{{ noticia.subtitulo|default:noticia.conteudo|striptags }}</p>
+                    <a href="{% url 'pages:noticia_detail' noticia.id %}" class="btn-primary" style="background: var(--uan-red); border: none; padding: 0.6rem 1.5rem;">Ler Artigo</a>
+                </div>
+            </div>
+            {% empty %}
+             <div class="slide active">
+                <img src="{% static 'images/hero-fallback.jpg' %}" alt="IPM">
+                <div class="slide-overlay"></div>
+                <div class="slide-content">
+                    <span class="slide-badge">BEM-VINDO</span>
+                    <h1>Portal Institucional do IPM</h1>
+                    <p>Excelência no Ensino e Inovação para o Futuro de Angola.</p>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="slider-nav">
+                {% for noticia in banner_noticias %}
+                <div class="slider-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></div>
+                {% endfor %}
+            </div>
         </div>
     </section>
-    {% endif %}
-    {% endwith %}
 
     <main class="container">
         <h2 class="section-title"><i class="fas fa-star"></i> DESTAQUES</h2>
         <section class="highlight-cards">
             {% for noticia in noticias|slice:"1:4" %}
-            <article class="card">
-                <div class="card-img-wrapper">
-                    <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
-                        alt="{{ noticia.titulo }}"
-                        onerror="this.src='https://via.placeholder.com/400x300?text=Alpha+News'">
-                    <span class="category-badge">{{ noticia.categoria.categoria }}</span>
-                </div>
-                <div class="card-content">
-                    <h3><a href="{% url 'pages:noticia_detail' noticia.id %}">{{ noticia.titulo }}</a></h3>
-                    <div class="meta">
-                        <span><i class="fas fa-calendar-alt"></i> {{ noticia.publicado_em|date:"d M Y" }}</span>
-                        <span><i class="fas fa-user"></i> {{ noticia.autor }}</span>
+            <article class="card news-card">
+                <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
+                     alt="{{ noticia.titulo }}" class="news-card-bg"
+                     onerror="this.src='https://via.placeholder.com/400x300?text=Alpha+News'">
+                <div class="news-card-overlay">
+                    <div class="news-card-content">
+                        <h3 class="news-title">{{ noticia.titulo }}</h3>
+                        <p class="news-subtitle">
+                            {% if noticia.subtitulo %}
+                                ({{ noticia.subtitulo }})
+                            {% else %}
+                                {{ noticia.categoria.categoria }}
+                            {% endif %}
+                        </p>
+                        <a href="{% url 'pages:noticia_detail' noticia.id %}" class="btn-saber-mais">SABER MAIS</a>
                     </div>
                 </div>
             </article>
@@ -130,36 +308,196 @@
                 </div>
             </aside>
         </div>
+
+        <!-- SEÇÃO CURSOS -->
+        <section id="cursos" class="home-section" style="padding: 4rem 0; border-top: 1px solid var(--glass-border);">
+            <h2 class="section-title"><i class="fas fa-graduation-cap"></i> NOSSOS CURSOS</h2>
+            <div class="highlight-cards">
+                <article class="card">
+                    <div class="card-content">
+                        <h3>Engenharia Informática</h3>
+                        <p>Formação sólida em desenvolvimento de software, redes e sistemas.</p>
+                    </div>
+                </article>
+                <article class="card">
+                    <div class="card-content">
+                        <h3>Contabilidade e Gestão</h3>
+                        <p>Prepare-se para liderar no mundo corporativo e financeiro.</p>
+                    </div>
+                </article>
+                <article class="card">
+                    <div class="card-content">
+                        <h3>Psicologia Clínica</h3>
+                        <p>Compreenda a mente humana e promova a saúde mental.</p>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- SEÇÃO SOBRE -->
+        <section id="sobre" class="home-section" style="padding: 4rem 0; border-top: 1px solid var(--glass-border);">
+            <h2 class="section-title"><i class="fas fa-university"></i> SOBRE O IPM</h2>
+            <article class="card" style="padding: 2.5rem; background: var(--card-bg);">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; align-items: center;">
+                    <div>
+                        <h3 style="font-size: 1.8rem; margin-bottom: 1.5rem; color: var(--uan-blue);">História e Missão</h3>
+                        <p style="font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem; color: var(--text-main);">
+                            O Instituto Politécnico do Mayombe é uma instituição de ensino superior dedicada à formação de quadros qualificados para o desenvolvimento de Angola. Fundado com o objetivo de promover a excelência académica e a inovação tecnológica.
+                        </p>
+                        <p style="font-size: 1.1rem; line-height: 1.8; color: var(--text-main);">
+                            A nossa missão é garantir um ensino de qualidade, focado nas necessidades do mercado e no desenvolvimento sustentável da região, integrando teoria e prática numa visão global.
+                        </p>
+                    </div>
+                    <div style="border-left: 4px solid var(--uan-yellow); padding-left: 2rem;">
+                        <h4 style="margin-bottom: 1rem; color: var(--uan-blue); font-size: 1.3rem;">Nossos Valores</h4>
+                        <ul style="list-style: none;">
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check-circle" style="color: var(--uan-light-blue); margin-right: 0.5rem;"></i> Excelência Académica</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check-circle" style="color: var(--uan-light-blue); margin-right: 0.5rem;"></i> Inovação Constante</li>
+                            <li style="margin-bottom: 0.8rem;"><i class="fas fa-check-circle" style="color: var(--uan-light-blue); margin-right: 0.5rem;"></i> Ética e Integridade</li>
+                            <li><i class="fas fa-check-circle" style="color: var(--uan-light-blue); margin-right: 0.5rem;"></i> Compromisso Social</li>
+                        </ul>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <!-- SEÇÃO CONTACTOS -->
+        <section id="contactos" class="home-section" style="padding: 4rem 0; border-top: 1px solid var(--glass-border); margin-bottom: 4rem;">
+            <h2 class="section-title"><i class="fas fa-envelope-open-text"></i> CONTACTOS</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem;">
+                <article class="card" style="padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem;">
+                    <div style="background: rgba(0, 51, 102, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--uan-blue); font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem;">Endereço</h4>
+                        <p style="color: var(--text-muted);">Rua Principal, Cabinda, Mayombe - Angola</p>
+                    </div>
+                </article>
+
+                <article class="card" style="padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem;">
+                    <div style="background: rgba(0, 51, 102, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-phone-alt" style="color: var(--uan-blue); font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem;">Telefone</h4>
+                        <p style="color: var(--text-muted);">+244 923 456 789<br>+244 252 000 000</p>
+                    </div>
+                </article>
+
+                <article class="card" style="padding: 2rem; display: flex; align-items: flex-start; gap: 1.5rem;">
+                    <div style="background: rgba(0, 51, 102, 0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i class="fas fa-envelope" style="color: var(--uan-blue); font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h4 style="margin-bottom: 0.5rem;">Email</h4>
+                        <p style="color: var(--text-muted);">geral@ipm.edu.ao<br>secretaria@ipm.edu.ao</p>
+                    </div>
+                </article>
+            </div>
+        </section>
     </main>
+    {% endblock %}
 
     <footer class="main-footer">
         <div class="container">
             <div class="footer-grid">
+                <!-- Coluna 1: Sobre o IPM -->
                 <div class="footer-info">
-                    <h4>IPM</h4>
-                    <p>Formando líderes através da educação e informação.</p>
-                    <p><i class="fas fa-map-marker-alt"></i> Rua Principal, 123</p>
-                    <p><i class="fas fa-envelope"></i> contato@ipm.edu</p>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem;">
+                        <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo" style="height: 50px; width: auto;">
+                        <div>
+                            <h4 style="margin: 0; color: var(--uan-yellow); font-size: 1.3rem;">IPM</h4>
+                            <p style="margin: 0; font-size: 0.85rem; color: rgba(255,255,255,0.7);">Instituto Politécnico do Mayombe</p>
+                        </div>
+                    </div>
+                    <p style="line-height: 1.8; color: rgba(255,255,255,0.8); margin-bottom: 1.5rem;">
+                        Formando líderes através da excelência académica, inovação e compromisso com o desenvolvimento de Angola.
+                    </p>
+                    <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                        <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-yellow)'; this.style.color='var(--uan-blue)';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-yellow)'; this.style.color='var(--uan-blue)';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-yellow)'; this.style.color='var(--uan-blue)';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-yellow)'; this.style.color='var(--uan-blue)';" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.color='white';">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Coluna 2: Links Rápidos -->
                 <nav class="footer-nav">
-                    <h4>EXPLORAR</h4>
-                    <ul>
-                        <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
-                        <li><a href="#">Esportes</a></li>
-                        <li><a href="#">Eventos</a></li>
+                    <h4 style="color: var(--uan-yellow); margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Links Rápidos</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{% url 'pages:index' %}" style="color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--uan-yellow)'; this.style.paddingLeft='0.5rem';" onmouseout="this.style.color='rgba(255,255,255,0.8)'; this.style.paddingLeft='0';">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i> Início
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{% url 'pages:notice' %}" style="color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--uan-yellow)'; this.style.paddingLeft='0.5rem';" onmouseout="this.style.color='rgba(255,255,255,0.8)'; this.style.paddingLeft='0';">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i> Notícias
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{% url 'pages:eventos' %}" style="color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--uan-yellow)'; this.style.paddingLeft='0.5rem';" onmouseout="this.style.color='rgba(255,255,255,0.8)'; this.style.paddingLeft='0';">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i> Eventos
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{% url 'pages:index' %}#sobre" style="color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--uan-yellow)'; this.style.paddingLeft='0.5rem';" onmouseout="this.style.color='rgba(255,255,255,0.8)'; this.style.paddingLeft='0';">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i> Sobre o IPM
+                            </a>
+                        </li>
+                        <li style="margin-bottom: 0.75rem;">
+                            <a href="{% url 'pages:index' %}#cursos" style="color: rgba(255,255,255,0.8); display: flex; align-items: center; gap: 0.5rem; transition: all 0.3s ease;" onmouseover="this.style.color='var(--uan-yellow)'; this.style.paddingLeft='0.5rem';" onmouseout="this.style.color='rgba(255,255,255,0.8)'; this.style.paddingLeft='0';">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i> Cursos
+                            </a>
+                        </li>
                     </ul>
                 </nav>
+
+                <!-- Coluna 3: Contactos -->
                 <div class="footer-nav">
-                    <h4>SOCIAL</h4>
-                    <ul>
-                        <li><a href="#"><i class="fab fa-facebook"></i> Facebook</a></li>
-                        <li><a href="#"><i class="fab fa-instagram"></i> Instagram</a></li>
-                        <li><a href="#"><i class="fab fa-twitter"></i> Twitter</a></li>
+                    <h4 style="color: var(--uan-yellow); margin-bottom: 1.5rem; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;">Contactos</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: flex-start;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--uan-yellow); margin-top: 0.25rem; font-size: 1.1rem;"></i>
+                            <div>
+                                <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.6;">
+                                    Rua Principal do Mayombe<br>
+                                    Cabinda, Angola
+                                </p>
+                            </div>
+                        </li>
+                        <li style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                            <i class="fas fa-phone" style="color: var(--uan-yellow); font-size: 1.1rem;"></i>
+                            <p style="margin: 0; color: rgba(255,255,255,0.9);">+244 923 456 789</p>
+                        </li>
+                        <li style="margin-bottom: 1rem; display: flex; gap: 1rem; align-items: center;">
+                            <i class="fas fa-envelope" style="color: var(--uan-yellow); font-size: 1.1rem;"></i>
+                            <div>
+                                <p style="margin: 0; color: rgba(255,255,255,0.9);">geral@ipm.edu.ao</p>
+                                <p style="margin: 0; color: rgba(255,255,255,0.7); font-size: 0.9rem;">secretaria@ipm.edu.ao</p>
+                            </div>
+                        </li>
                     </ul>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Jornal IPM. Design Premium por Antigravity.</p>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom" style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,0.1); text-align: center;">
+                <p style="color: rgba(255,255,255,0.6); margin: 0; font-size: 0.9rem;">
+                    &copy; 2025 Instituto Politécnico do Mayombe. Todos os direitos reservados.
+                </p>
+                <p style="color: rgba(255,255,255,0.5); margin-top: 0.5rem; font-size: 0.85rem;">
+                    Desenvolvido com <i class="fas fa-heart" style="color: var(--uan-red);"></i> pelo Grupo Nº 6
+                </p>
             </div>
         </div>
     </footer>
@@ -181,20 +519,12 @@
             });
         });
 
-        // Animate on scroll - fade in elements
+        // --- OBSERVER FOR ANIMATIONS ---
         const observerOptions = {
             threshold: 0.1,
             rootMargin: '0px 0px -50px 0px'
         };
 
-        document.querySelectorAll('.card, .news-item, .widget').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            observer.observe(el);
-        });
-
-        // Clear inline styles after animation to allow CSS hover to work perfectly
         const clearInlineStyles = (el) => {
             setTimeout(() => {
                 el.style.transform = '';
@@ -212,6 +542,95 @@
                 }
             });
         }, observerOptions);
+
+        // Initialize animation for elements
+        document.querySelectorAll('.card, .news-item, .widget').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(20px)';
+            el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+            observer.observe(el);
+        });
+
+        // --- HERO SLIDER (BANNER) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const slides = document.querySelectorAll('.slide');
+            const dots = document.querySelectorAll('.slider-dot');
+            const sliderContainer = document.getElementById('heroSlider');
+            
+            // Safety check
+            if (slides.length === 0) return;
+
+            let currentSlide = 0;
+            let slideInterval;
+            const intervalTime = 4000; // 4 seconds
+
+            // Helper to activate a specific slide
+            function activateSlide(index) {
+                // Ensure index is valid
+                if (index < 0) index = slides.length - 1;
+                if (index >= slides.length) index = 0;
+
+                // Remove active class from all
+                slides.forEach(s => s.classList.remove('active'));
+                dots.forEach(d => d.classList.remove('active'));
+
+                // Add active to current
+                slides[index].classList.add('active');
+                if (dots[index]) dots[index].classList.add('active');
+                
+                currentSlide = index;
+            }
+
+            function nextSlide() {
+                activateSlide(currentSlide + 1);
+            }
+
+            function startTimer() {
+                clearInterval(slideInterval);
+                if (slides.length > 1) {
+                    slideInterval = setInterval(nextSlide, intervalTime);
+                }
+            }
+
+            function stopTimer() {
+                clearInterval(slideInterval);
+            }
+
+            // Expose goToSlide globally if still needed, but prefer internal use
+            window.goToSlide = function(index) {
+                stopTimer();
+                activateSlide(index);
+                startTimer();
+            };
+
+            // Add click listeners to dots
+            dots.forEach(dot => {
+                dot.addEventListener('click', function() {
+                    const index = parseInt(this.getAttribute('data-index'));
+                    window.goToSlide(index);
+                });
+            });
+
+            // Hover effects
+            if (sliderContainer) {
+                sliderContainer.addEventListener('mouseenter', stopTimer);
+                sliderContainer.addEventListener('mouseleave', startTimer);
+            }
+
+            // Initialize
+            // Ensure at least one slide is active if HTML didn't set it (fallback)
+            if (!document.querySelector('.slide.active')) {
+                activateSlide(0);
+            } else {
+                // Determine current slide index based on DOM
+                slides.forEach((s, i) => {
+                    if (s.classList.contains('active')) currentSlide = i;
+                });
+            }
+
+            // Start auto rotation
+            startTimer();
+        });
     </script>
 </body>
 

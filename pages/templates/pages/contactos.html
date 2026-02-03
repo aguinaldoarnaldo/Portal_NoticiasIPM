@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contactos | IPM NEWS</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="{% static 'js/theme-manager.js' %}"></script>
+</head>
+
+<body>
+
+    <header class="main-header">
+        <div class="header-top-bar">
+            <div class="container header-top-inner">
+                <div class="header-contact">
+                    <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
+                    <span><i class="fas fa-phone"></i> +244 923 456 789</span>
+                </div>
+                <div class="header-links">
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container header-main">
+            <a href="{% url 'pages:index' %}" class="logo">
+                <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
+                    onerror="this.src='https://via.placeholder.com/60?text=IPM'">
+                <div class="logo-text">
+                    <span class="logo-title">INSTITUTO POLITÉCNICO</span>
+                    <span class="logo-subtitle">DO MAYOMBE</span>
+                </div>
+            </a>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'pages:index' %}">Início</a></li>
+                    <li><a href="{% url 'pages:index' %}#sobre">Sobre o IPM</a></li>
+                    <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
+                    <li><a href="{% url 'pages:category_news' 'Esportes' %}">Esportes</a></li>
+                    <li><a href="{% url 'pages:index' %}#cursos">Cursos</a></li>
+                    <li><a href="{% url 'pages:index' %}#contactos" class="active">Contactos</a></li>
+                </ul>
+            </nav>
+            <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="container" style="margin-top: 4rem;">
+        <h1 class="section-title">Fale Conosco</h1>
+        <article class="card" style="padding: 2rem; max-width: 600px;">
+            <p><strong>Endereço:</strong> Rua Principal, Cabinda, Mayombe</p>
+            <p><strong>Email:</strong> geral@ipm.edu.ao</p>
+            <p><strong>Telefone:</strong> +244 252 000 000</p>
+        </article>
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2025 Jornal IPM.</p>
+            </div>
+        </div>
+    </footer>
+    <script src="{% static 'js/mobile-menu.js' %}"></script>
+</body>
+</html>

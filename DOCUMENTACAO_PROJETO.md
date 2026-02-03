@@ -18,7 +18,7 @@
 
 ## 🎯 Visão Geral
 
-O **Portal de Notícias IPM** é um sistema web desenvolvido em Django para gerenciamento e publicação de notícias do Instituto Politécnico de Malanje (IPM). O sistema permite a criação, edição, publicação e visualização de notícias categorizadas, além de gerenciamento de eventos.
+O **Portal de Notícias IPM** é um sistema web desenvolvido em Django para gerenciamento e publicação de notícias do Instituto Politécnico do Mayombe (IPM). O sistema permite a criação, edição, publicação e visualização de notícias categorizadas, além de gerenciamento de eventos.
 
 ### Objetivos do Projeto
 - Centralizar a publicação de notícias institucionais
@@ -799,7 +799,7 @@ urlpatterns = [
 
 | URL | View | Nome | Descrição |
 |-----|------|------|-----------|
-| `/` | IndexView | index | Página inicial com notícias recentes e eventos |
+| `/` | IndexView | index | Página inicial com notícias, cursos e eventos |
 | `/notices/` | NoticesView | notice | Lista paginada de todas as notícias |
 | `/noticia/<uuid:pk>/` | NoticiaDetailView | noticia_detail | Detalhes de uma notícia específica |
 | `/categoria/<str:categoria_nome>/` | CategoryNoticeView | category_news | Notícias filtradas por categoria |
@@ -820,7 +820,7 @@ http://localhost:8000/admin/                     # Painel administrativo
 
 ### 1. IndexView (ListView)
 **Template:** `pages/index.html`  
-**Função:** Exibe página inicial com notícias ativas e próximos eventos
+**Função:** Exibe página inicial com notícias ativas, seção de cursos e próximos eventos
 
 **Contexto:**
 - `noticias`: Todas as notícias com status=True

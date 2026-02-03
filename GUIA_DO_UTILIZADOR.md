@@ -9,7 +9,7 @@ Olá! Este é um guia super simples para te ensinar a usar o Portal de Notícias
 ## 🌟 O que é o Portal de Notícias IPM?
 
 Imagina um jornal, mas na internet! O Portal de Notícias IPM é um site onde:
-- 📰 Podes ler notícias sobre o Instituto Politécnico de Malanje
+- 📰 Podes ler notícias sobre o Instituto Politécnico do Mayombe
 - 🎉 Podes ver eventos que vão acontecer
 - 📚 Podes encontrar notícias sobre desporto, cultura, política e muito mais!
 
@@ -437,7 +437,7 @@ Fica atento! 👀
 ---
 
 **Criado por:** Grupo Número 6  
-**Para:** Instituto Politécnico de Malanje  
+**Para:** Instituto Politécnico do Mayombe  
 **Ano:** 2025  
 **Versão do Guia:** 1.0 - Super Fácil! 😊
 

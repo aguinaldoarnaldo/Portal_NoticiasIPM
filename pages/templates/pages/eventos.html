@@ -1,0 +1,390 @@
+{% extends 'pages/index.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Global Page Styles */
+    body {
+        background-color: #f8f9fa;
+        color: #333;
+    }
+
+    .events-header {
+        background: linear-gradient(135deg, var(--uan-blue) 0%, #001a33 100%);
+        color: white;
+        padding: 6rem 0 4rem;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 4rem;
+        text-align: center;
+    }
+
+    .events-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('{% static "images/pattern.png" %}') opacity(0.05); /* Optional subtle pattern */
+        z-index: 0;
+    }
+
+    .events-header-content {
+        position: relative;
+        z-index: 2;
+    }
+
+    .events-title {
+        font-size: 3.5rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        letter-spacing: -1px;
+    }
+
+    .events-subtitle {
+        font-size: 1.2rem;
+        color: rgba(255, 255, 255, 0.8);
+        max-width: 600px;
+        margin: 0 auto;
+        font-weight: 300;
+    }
+
+    /* Section Styles */
+    .events-section {
+        margin-bottom: 6rem;
+    }
+
+    .section-label {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 3rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--uan-blue);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(0, 51, 102, 0.2);
+    }
+
+    .section-label i {
+        color: var(--uan-yellow);
+    }
+
+    /* Event Cards Grid */
+    .events-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 3rem 2rem;
+    }
+
+    /* Modern Event Card */
+    .event-card {
+        background: white;
+        border-radius: 16px;
+        border: 1px solid rgba(0,0,0,0.05);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
+        transition: all 0.4s ease;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+        border-color: rgba(0, 51, 102, 0.1);
+    }
+
+    /* Date Badge (Left Side) for Upcoming */
+    .event-date-badge {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: white;
+        border-radius: 12px;
+        padding: 10px 15px;
+        text-align: center;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+    }
+
+    .event-day {
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--uan-blue);
+    }
+
+    .event-month {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+    }
+
+    /* Card Image Area */
+    .event-image {
+        height: 200px;
+        background-color: #eee;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .event-image::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.4), transparent);
+        z-index: 1;
+    }
+
+    .event-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.6s ease;
+    }
+
+    .event-card:hover .event-image img {
+        transform: scale(1.05);
+    }
+
+    /* Card Content */
+    .event-content {
+        padding: 2rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-title {
+        font-size: 1.4rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        color: var(--text-main);
+        line-height: 1.3;
+    }
+
+    .event-desc {
+        color: var(--text-muted);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: auto; /* Pushes footer down */
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .event-footer {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(0,0,0,0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .event-time {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-details {
+        color: var(--uan-blue);
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: gap 0.3s ease;
+    }
+
+    .event-card:hover .btn-details {
+        gap: 0.8rem;
+        color: var(--uan-yellow);
+    }
+
+    /* Past Events Styles - More Subdued */
+    .past-events-grid {
+        opacity: 0.85;
+    }
+
+    .past-event-item {
+        display: flex;
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        align-items: center;
+        gap: 2rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+    }
+
+    .past-event-item:hover {
+        transform: translateX(10px);
+        opacity: 1;
+        border-color: rgba(0, 51, 102, 0.2);
+    }
+
+    .past-date {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-width: 80px;
+        height: 80px;
+        background: #f0f4f8;
+        border-radius: 50%;
+        color: var(--text-muted);
+    }
+
+    .past-date span:first-child {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    .past-date span:last-child {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+
+    .past-info h4 {
+        font-size: 1.2rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-main);
+    }
+
+    .past-info p {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+    }
+
+    /* Empty States */
+    .empty-state {
+        text-align: center;
+        padding: 4rem;
+        color: var(--text-muted);
+        background: rgba(0,0,0,0.02);
+        border-radius: 16px;
+    }
+
+    @media (max-width: 768px) {
+        .events-header {
+            padding: 4rem 0 3rem;
+        }
+        .events-title {
+            font-size: 2.5rem;
+        }
+        .events-grid {
+            grid-template-columns: 1fr;
+        }
+        .past-event-item {
+            flex-direction: column;
+            text-align: center;
+            gap: 1rem;
+        }
+    }
+</style>
+
+<!-- Header Banner -->
+<header class="events-header">
+    <div class="container events-header-content">
+        <h1 class="events-title">Agenda de Eventos</h1>
+        <p class="events-subtitle">Fique por dentro das atividades académicas, conferências e workshops do IPM.</p>
+    </div>
+</header>
+
+<main class="container">
+    
+    <!-- UPCOMING EVENTS SECTION -->
+    <section class="events-section">
+        <div class="section-label">
+            <i class="fas fa-calendar-alt"></i> Próximos Eventos
+        </div>
+
+        {% if upcoming_events %}
+        <div class="events-grid">
+            {% for evento in upcoming_events %}
+            <article class="event-card">
+                <div class="event-date-badge">
+                    <span class="event-day">{{ evento.data|date:"d" }}</span>
+                    <span class="event-month">{{ evento.data|date:"M" }}</span>
+                </div>
+                <div class="event-image">
+                    <!-- Placeholder image if no image field in model, using random distinct gradients or a static asset -->
+                    <div style="width:100%; height:100%; background: linear-gradient(120deg, var(--uan-blue), var(--uan-light-blue)); display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-university" style="font-size: 3rem; color: rgba(255,255,255,0.2);"></i>
+                    </div>
+                </div>
+                <div class="event-content">
+                    <h3 class="event-title">{{ evento.titulo }}</h3>
+                    <p class="event-desc">{{ evento.descricao|default:"Sem descrição disponível." }}</p>
+                    <div class="event-footer">
+                        <div class="event-time">
+                            <i class="far fa-clock"></i> {{ evento.data|time:"H:i" }}
+                        </div>
+                        <a href="#" class="btn-details">Detalhes <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="far fa-calendar-times" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;"></i>
+            <h3>Não há eventos programados.</h3>
+            <p>Fique atento às nossas atualizações em breve.</p>
+        </div>
+        {% endif %}
+    </section>
+
+    <!-- PAST EVENTS SECTION -->
+    <section class="events-section">
+        <div class="section-label" style="opacity: 0.7;">
+            <i class="fas fa-history"></i> Eventos Passados
+        </div>
+
+        {% if past_events %}
+        <div class="past-events-grid">
+            {% for evento in past_events %}
+            <article class="past-event-item">
+                <div class="past-date">
+                    <span>{{ evento.data|date:"d" }}</span>
+                    <span>{{ evento.data|date:"M" }}</span>
+                </div>
+                <div class="past-info">
+                    <h4>{{ evento.titulo }}</h4>
+                    <p>{{ evento.descricao|truncatewords:20 }}</p>
+                </div>
+                <div style="margin-left: auto;">
+                   <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600;">Realizado</span>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color: var(--text-muted); text-align: center;">Nenhum histórico de eventos recente.</p>
+        {% endif %}
+    </section>
+
+</main>
+{% endblock %}

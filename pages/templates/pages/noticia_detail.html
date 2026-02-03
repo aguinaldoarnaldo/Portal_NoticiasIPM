@@ -15,31 +15,44 @@
 <body>
 
     <header class="main-header">
-        <div class="header-top">
-            <div class="logo">
+        <!-- University Top Bar -->
+        <div class="header-top-bar">
+            <div class="container header-top-inner">
+                <div class="header-contact">
+                    <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
+                    <span><i class="fas fa-phone"></i> +244 923 456 789</span>
+                </div>
+                <div class="header-links">
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
+                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container header-main">
+            <a href="{% url 'pages:index' %}" class="logo">
                 <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
-                    onerror="this.src='https://via.placeholder.com/50?text=IPM'">
-                <span>IPM Noticias</span>
-            </div>
-            <div class="social-icons">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-twitter"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-            </div>
-            <button id="theme-toggle" class="theme-toggle" aria-label="Alternar Tema">
-                <i class="fas fa-moon"></i>
-            </button>
+                    onerror="this.src='https://via.placeholder.com/60?text=IPM'">
+                <div class="logo-text">
+                    <span class="logo-title">INSTITUTO POLITÉCNICO</span>
+                    <span class="logo-subtitle">DO MAYOMBE</span>
+                </div>
+            </a>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="{% url 'pages:index' %}">Início</a></li>
+                    <li><a href="{% url 'pages:index' %}#sobre">Sobre o IPM</a></li>
+                    <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
+                    <li><a href="{% url 'pages:category_news' 'Esportes' %}">Esportes</a></li>
+                    <li><a href="{% url 'pages:index' %}#cursos">Cursos</a></li>
+                    <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
+                </ul>
+            </nav>
             <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="{% url 'pages:index' %}">Início</a></li>
-                <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
-                <li><a href="{% url 'pages:category_news' 'Esportes' %}">Esportes</a></li>
-            </ul>
-        </nav>
     </header>
 
     <main class="container detail-container">
@@ -71,17 +84,21 @@
             <h2 class="section-title"><i class="fas fa-star"></i> OUTROS DESTAQUES</h2>
             <div class="highlight-cards responsive-cards">
                 {% for destaque in destaques %}
-                <article class="card">
-                    <div class="card-img-wrapper">
-                        <img src="{% if destaque.imagem %}{{ destaque.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
-                            alt="{{ destaque.titulo }}"
-                            onerror="this.src='https://via.placeholder.com/400x300?text=IPM+News'">
-                        <span class="category-badge">{{ destaque.categoria.categoria }}</span>
-                    </div>
-                    <div class="card-content">
-                        <h3><a href="{% url 'pages:noticia_detail' destaque.id %}">{{ destaque.titulo }}</a></h3>
-                        <div class="meta">
-                            <span><i class="fas fa-calendar-alt"></i> {{ destaque.publicado_em|date:"d M Y" }}</span>
+                <article class="card news-card">
+                    <img src="{% if destaque.imagem %}{{ destaque.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
+                         alt="{{ destaque.titulo }}" class="news-card-bg"
+                         onerror="this.src='https://via.placeholder.com/400x300?text=IPM+News'">
+                    <div class="news-card-overlay">
+                        <div class="news-card-content">
+                            <h3 class="news-title">{{ destaque.titulo }}</h3>
+                            <p class="news-subtitle">
+                                {% if destaque.subtitulo %}
+                                    ({{ destaque.subtitulo }})
+                                {% else %}
+                                    {{ destaque.categoria.categoria }}
+                                {% endif %}
+                            </p>
+                            <a href="{% url 'pages:noticia_detail' destaque.id %}" class="btn-saber-mais">SABER MAIS</a>
                         </div>
                     </div>
                 </article>
@@ -99,7 +116,7 @@
     <footer class="main-footer">
         <div class="container">
             <div class="footer-bottom">
-                <p>&copy; 2025 Jornal IPM. Design Premium.</p>
+                <p>&copy; 2025 Jornal IPM.</p>
             </div>
         </div>
     </footer>
