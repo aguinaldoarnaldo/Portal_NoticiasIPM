@@ -342,7 +342,7 @@
                         <div class="event-time">
                             <i class="far fa-clock"></i> {{ evento.data|time:"H:i" }}
                         </div>
-                        <a href="#" class="btn-details">Detalhes <i class="fas fa-arrow-right"></i></a>
+                        <a href="{% url 'pages:evento_detail' evento.id %}" class="btn-details">Detalhes <i class="fas fa-arrow-right"></i></a>
                     </div>
                 </div>
             </article>

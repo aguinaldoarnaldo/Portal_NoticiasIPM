@@ -49,6 +49,75 @@
                     <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
                 </ul>
             </nav>
+            
+            <!-- Botões de Autenticação -->
+            <div style="display: flex; align-items: center; gap: 0.6rem; margin-left: 0.75rem;">
+                {% if user.is_authenticated %}
+                    <!-- User Profile Dropdown -->
+                    <div style="position: relative;">
+                        <button id="userMenuBtn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(0, 51, 102, 0.05); border: 2px solid var(--uan-blue); border-radius: 50px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.1)'" onmouseout="this.style.background='rgba(0, 51, 102, 0.05)'">
+                            {% if user.aluno.foto %}
+                                <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--uan-blue);">
+                            {% else %}
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--uan-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;">
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span style="color: var(--uan-blue); font-weight: 600; font-size: 0.85rem;">
+                                {{ user.first_name|default:user.username }}
+                            </span>
+                            <i class="fas fa-chevron-down" style="color: var(--uan-blue); font-size: 0.7rem;"></i>
+                        </button>
+                        
+                        <!-- Dropdown Menu -->
+                        <div id="userDropdown" style="display: none; position: absolute; top: 110%; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-width: 250px; overflow: hidden; z-index: 2000;">
+                            <!-- User Info Header -->
+                            <div style="padding: 1.2rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; text-align: center;">
+                                {% if user.aluno.foto %}
+                                    <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 0.5rem;">
+                                {% else %}
+                                    <div style="width: 70px; height: 70px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; color: var(--uan-blue); font-weight: 700; font-size: 1.8rem; margin: 0 auto 0.5rem; border: 3px solid white;">
+                                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                                    </div>
+                                {% endif %}
+                                <h4 style="margin: 0; font-size: 1rem;">{{ user.get_full_name }}</h4>
+                                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; opacity: 0.9;">{{ user.email }}</p>
+                                {% if user.aluno %}
+                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.75rem; opacity: 0.8;">{{ user.aluno.numero_estudante }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Menu Items -->
+                            <div style="padding: 0.5rem 0;">
+                                <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
+                                    <i class="fas fa-user" style="color: var(--uan-blue); width: 20px;"></i>
+                                    <span style="font-size: 0.9rem;">Meu Perfil</span>
+                                </a>
+                                <a href="#" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
+                                    <i class="fas fa-calendar-check" style="color: var(--uan-blue); width: 20px;"></i>
+                                    <span style="font-size: 0.9rem;">Minhas Inscrições</span>
+                                </a>
+                                <div style="height: 1px; background: #e0e0e0; margin: 0.5rem 0;"></div>
+                                <form method="post" action="{% url 'pages:logout' %}" style="margin: 0;">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('Tem certeza que deseja sair da sua conta?');" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--uan-red); text-decoration: none; transition: all 0.3s ease; background: transparent; border: none; cursor: pointer; text-align: left;" onmouseover="this.style.background='rgba(204, 0, 0, 0.05)'" onmouseout="this.style.background='transparent'">
+                                        <i class="fas fa-sign-out-alt" style="width: 20px;"></i>
+                                        <span style="font-size: 0.9rem; font-weight: 600;">Sair</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{% url 'pages:login' %}" style="padding: 0.4rem 0.9rem; background: transparent; color: var(--uan-blue); border: 2px solid var(--uan-blue); border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-blue)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--uan-blue)'">
+                        <i class="fas fa-sign-in-alt"></i> Entrar
+                    </a>
+                    <a href="{% url 'pages:registro' %}" style="padding: 0.4rem 0.9rem; background: var(--uan-blue); color: white; border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
+                        <i class="fas fa-user-plus"></i> Criar Conta
+                    </a>
+                {% endif %}
+            </div>
+            
             <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
                 <i class="fas fa-bars"></i>
             </button>
@@ -275,8 +344,7 @@
                         <div class="item-text">
                             <h4><a href="{% url 'pages:noticia_detail' noticia.id %}">{{ noticia.titulo }}</a></h4>
                             <p>{{ noticia.subtitulo|truncatechars:100 }}</p>
-                            <span class="item-meta">{{ noticia.categoria.categoria }} | {{
-                                noticia.publicado_em|date:"d/m/Y" }}</span>
+                            <span class="item-meta">{{ noticia.categoria.categoria }} | {{ noticia.publicado_em|date:"d/m/Y" }}</span>
                         </div>
                     </article>
                     {% empty %}
@@ -504,6 +572,24 @@
 
     <script src="{% static 'js/mobile-menu.js' %}"></script>
     <script>
+        // User Dropdown Toggle
+        const userMenuBtn = document.getElementById('userMenuBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userMenuBtn && userDropdown) {
+            userMenuBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+                    userDropdown.style.display = 'none';
+                }
+            });
+        }
+        
         // Card Animation Index - for staggered animations
         document.querySelectorAll('.card').forEach((card, index) => {
             card.style.setProperty('--card-index', index);

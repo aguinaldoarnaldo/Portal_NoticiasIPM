@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 import uuid
 # Create your models here.
 
@@ -25,6 +26,8 @@ class Noticia(models.Model):
     publicado_em = models.DateTimeField(auto_now_add=True , blank=False, null=False,verbose_name='Data de Publicação')
     atualizado_em = models.DateTimeField(auto_now=True , blank=False, null=False,verbose_name='Data de Actualização')
     status = models.BooleanField(default=True , blank=False, null=False)  # ativo/inativo
+    exclusivo_alunos = models.BooleanField(default=False, verbose_name='Exclusivo para Alunos')  # Notícias exclusivas
+    
     class Meta:
         verbose_name = "Notícia"
         verbose_name_plural = "Notícias"
@@ -42,6 +45,7 @@ class Evento(models.Model):
     titulo = models.CharField(max_length=255, verbose_name='Título')
     data = models.DateField(verbose_name='Data do Evento')
     descricao = models.TextField(blank=True, null=True, verbose_name='Descrição')
+    vagas = models.IntegerField(default=50, verbose_name='Número de Vagas')
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -51,3 +55,41 @@ class Evento(models.Model):
 
     def __str__(self):
         return f"{self.data.strftime('%d/%m')} - {self.titulo}"
+    
+    def vagas_disponiveis(self):
+        """Retorna o número de vagas disponíveis"""
+        inscritos = self.inscricoes.count()
+        return max(0, self.vagas - inscritos)
+
+class Aluno(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='aluno')
+    numero_estudante = models.CharField(max_length=20, unique=True, verbose_name='Número de Estudante')
+    curso = models.CharField(max_length=200, verbose_name='Curso')
+    ano_ingresso = models.IntegerField(verbose_name='Ano de Ingresso')
+    telefone = models.CharField(max_length=20, blank=True, null=True, verbose_name='Telefone')
+    foto = models.ImageField(upload_to='static/uploads/alunos/', blank=True, null=True, verbose_name='Foto')
+    criado_em = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Aluno'
+        verbose_name_plural = 'Alunos'
+        ordering = ['user__first_name']
+    
+    def __str__(self):
+        return f"{self.numero_estudante} - {self.user.get_full_name()}"
+
+class InscricaoEvento(models.Model):
+    id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
+    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='inscricoes')
+    evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='inscricoes')
+    data_inscricao = models.DateTimeField(auto_now_add=True)
+    confirmado = models.BooleanField(default=True)
+    
+    class Meta:
+        verbose_name = 'Inscrição em Evento'
+        verbose_name_plural = 'Inscrições em Eventos'
+        unique_together = ['aluno', 'evento']  # Um aluno não pode se inscrever duas vezes no mesmo evento
+        ordering = ['-data_inscricao']
+    
+    def __str__(self):
+        return f"{self.aluno.user.get_full_name()} - {self.evento.titulo}"
