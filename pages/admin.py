@@ -54,12 +54,36 @@ class AlunoAdmin(admin.ModelAdmin):
 
 @admin.register(InscricaoEvento)
 class InscricaoEventoAdmin(admin.ModelAdmin):
-    list_display = ('get_aluno_nome', 'evento', 'data_inscricao', 'confirmado')
+    list_display = ('get_participante', 'get_tipo', 'evento', 'data_inscricao', 'confirmado')
     list_filter = ('confirmado', 'evento', 'data_inscricao')
-    search_fields = ('aluno__user__first_name', 'aluno__user__last_name', 'aluno__numero_estudante', 'evento__titulo')
+    search_fields = (
+        'aluno__user__first_name', 'aluno__user__last_name', 
+        'aluno__numero_estudante', 'evento__titulo',
+        'nome_externo', 'email_externo'
+    )
     ordering = ('-data_inscricao',)
     readonly_fields = ('data_inscricao',)
     
-    def get_aluno_nome(self, obj):
-        return obj.aluno.user.get_full_name()
-    get_aluno_nome.short_description = 'Aluno'
+    fieldsets = (
+        ('Informações do Evento', {
+            'fields': ('evento', 'confirmado', 'data_inscricao')
+        }),
+        ('Vínculo com Aluno', {
+            'fields': ('aluno',),
+            'description': 'Preencha este campo se o inscrito for um aluno registado.'
+        }),
+        ('Informações Externas (Não Alunos)', {
+            'fields': ('nome_externo', 'email_externo', 'telefone_externo'),
+            'description': 'Estes campos são usados para inscrições de pessoas de fora da instituição.'
+        }),
+    )
+    
+    def get_participante(self, obj):
+        if obj.aluno:
+            return obj.aluno.user.get_full_name()
+        return obj.nome_externo
+    get_participante.short_description = 'Participante'
+
+    def get_tipo(self, obj):
+        return "Aluno" if obj.aluno else "Externo"
+    get_tipo.short_description = 'Tipo'

@@ -1,44 +1,71 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.models import User
 from .models import Aluno
+from django.contrib.auth.models import User
 
-class AlunoRegistroForm(UserCreationForm):
-    """Formulário de registro para alunos"""
-    email = forms.EmailField(required=True, label='Email')
-    first_name = forms.CharField(max_length=30, required=True, label='Nome')
-    last_name = forms.CharField(max_length=30, required=True, label='Sobrenome')
-    numero_estudante = forms.CharField(max_length=20, required=True, label='Número de Estudante')
-    curso = forms.CharField(max_length=200, required=True, label='Curso')
-    ano_ingresso = forms.IntegerField(required=True, label='Ano de Ingresso', min_value=2000, max_value=2030)
-    telefone = forms.CharField(max_length=20, required=False, label='Telefone')
-    
+class AlunoUpdateForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, label='Nome')
+    last_name = forms.CharField(max_length=150, label='Apelido')
+    email = forms.EmailField(label='E-mail')
+
     class Meta:
-        model = User
-        fields = ['username', 'email', 'first_name', 'last_name', 'password1', 'password2']
-    
+        model = Aluno
+        fields = ['numero_estudante', 'curso', 'ano_ingresso', 'telefone', 'foto']
+        widgets = {
+            'numero_estudante': forms.TextInput(attrs={'readonly': 'readonly', 'class': 'form-control-readonly'}),
+        }
+
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        # Personalizar labels e placeholders
-        self.fields['username'].label = 'Nome de Utilizador'
-        self.fields['username'].help_text = 'Obrigatório. 150 caracteres ou menos. Letras, dígitos e @/./+/-/_ apenas.'
-        self.fields['password1'].label = 'Senha'
-        self.fields['password2'].label = 'Confirmar Senha'
-        
+        super(AlunoUpdateForm, self).__init__(*args, **kwargs)
+        if self.instance and self.instance.user:
+            self.fields['first_name'].initial = self.instance.user.first_name
+            self.fields['last_name'].initial = self.instance.user.last_name
+            self.fields['email'].initial = self.instance.user.email
+
     def save(self, commit=True):
-        user = super().save(commit=False)
-        user.email = self.cleaned_data['email']
+        aluno = super(AlunoUpdateForm, self).save(commit=False)
+        user = aluno.user
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
-        
+        user.email = self.cleaned_data['email']
         if commit:
             user.save()
-            # Criar perfil de aluno
-            Aluno.objects.create(
-                user=user,
-                numero_estudante=self.cleaned_data['numero_estudante'],
-                curso=self.cleaned_data['curso'],
-                ano_ingresso=self.cleaned_data['ano_ingresso'],
-                telefone=self.cleaned_data.get('telefone', '')
-            )
-        return user
+            aluno.save()
+        return aluno
+
+class AlunoRegistroForm(forms.ModelForm):
+    first_name = forms.CharField(max_length=150, label='Nome')
+    last_name = forms.CharField(max_length=150, label='Apelido')
+    email = forms.EmailField(label='E-mail')
+    password = forms.CharField(widget=forms.PasswordInput, label='Senha')
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label='Confirmar Senha')
+
+    class Meta:
+        model = Aluno
+        fields = ['numero_estudante', 'curso', 'ano_ingresso', 'telefone']
+
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            raise forms.ValidationError("As senhas não coincidem.")
+        return cleaned_data
+
+    def save(self, commit=True):
+        # Primeiro cria o usuário
+        user = User.objects.create_user(
+            username=self.cleaned_data['numero_estudante'], # Usando o número de estudante como username
+            email=self.cleaned_data['email'],
+            password=self.cleaned_data['password'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name']
+        )
+        
+        # Depois cria o aluno associado
+        aluno = super().save(commit=False)
+        aluno.user = user
+        
+        if commit:
+            aluno.save()
+        return aluno

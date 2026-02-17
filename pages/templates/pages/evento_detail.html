@@ -53,7 +53,7 @@
                 {% if user.is_authenticated %}
                     <div style="position: relative;">
                         <button id="userMenuBtn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(0, 51, 102, 0.05); border: 2px solid var(--uan-blue); border-radius: 50px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.1)'" onmouseout="this.style.background='rgba(0, 51, 102, 0.05)'">
-                            {% if user.aluno.foto %}
+                            {% if user.aluno and user.aluno.foto %}
                                 <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--uan-blue);">
                             {% else %}
                                 <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--uan-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;">
@@ -68,7 +68,7 @@
                         
                         <div id="userDropdown" style="display: none; position: absolute; top: 110%; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-width: 250px; overflow: hidden; z-index: 2000;">
                             <div style="padding: 1.2rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; text-align: center;">
-                                {% if user.aluno.foto %}
+                                {% if user.aluno and user.aluno.foto %}
                                     <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 0.5rem;">
                                 {% else %}
                                     <div style="width: 70px; height: 70px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; color: var(--uan-blue); font-weight: 700; font-size: 1.8rem; margin: 0 auto 0.5rem; border: 3px solid white;">
@@ -220,15 +220,75 @@
                                     </div>
                                 {% endif %}
                             {% endif %}
+                        {% else %}
+                            <!-- Logged in as Admin/Staff without Aluno profile -->
+                            {% if not evento.exclusivo_alunos %}
+                                <div style="padding: 1rem; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; margin-bottom: 1.5rem;">
+                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
+                                        Inscrição pública habilitada para esta conta.
+                                    </p>
+                                </div>
+                                <form method="post" action="{% url 'pages:inscrever_evento' evento.id %}">
+                                    {% csrf_token %}
+                                    <div style="margin-bottom: 0.8rem;">
+                                        <input type="text" name="nome" placeholder="Nome Completo" required style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+                                    </div>
+                                    <div style="margin-bottom: 0.8rem;">
+                                        <input type="email" name="email" placeholder="Seu melhor Email" required style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <input type="text" name="telefone" placeholder="Telefone (Opcional)" style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
+                                    </div>
+                                    <button type="submit" style="width: 100%; padding: 1rem; background: var(--uan-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        <i class="fas fa-paper-plane"></i> Confirmar Inscrição
+                                    </button>
+                                </form>
+                            {% else %}
+                                <div style="padding: 1.5rem; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; text-align: center;">
+                                    <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--uan-blue); margin-bottom: 1rem; opacity: 0.5;"></i>
+                                    <p style="margin: 0 0 1rem 0; color: var(--text-muted); font-size: 0.95rem;">
+                                        <strong>Evento exclusivo para Alunos</strong><br>
+                                        Esta conta não possui um perfil de estudante vinculado.
+                                    </p>
+                                    <a href="{% url 'pages:registro' %}" style="color: var(--uan-blue); font-weight: 600; text-decoration: underline;">Criar conta de estudante</a>
+                                </div>
+                            {% endif %}
                         {% endif %}
                     {% else %}
-                        <div style="padding: 1.5rem; background: #fff3cd; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
-                            <i class="fas fa-lock" style="font-size: 2.5rem; color: #856404; margin-bottom: 0.5rem;"></i>
-                            <p style="margin: 0 0 1rem 0; color: #856404; font-weight: 600;">Faça login para se inscrever</p>
-                        </div>
-                        <a href="{% url 'pages:login' %}?next={{ request.path }}" style="display: block; width: 100%; padding: 1rem; background: var(--uan-blue); color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
-                            <i class="fas fa-sign-in-alt"></i> Fazer Login
-                        </a>
+                        <!-- Not Logged In -->
+                        {% if not evento.exclusivo_alunos %}
+                            <div style="padding: 1rem; background: #e7f3ff; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                                <p style="margin: 0; color: var(--uan-blue); font-weight: 600; font-size: 0.9rem;">
+                                    <i class="fas fa-globe"></i> Inscrição Aberta ao Público
+                                </p>
+                            </div>
+                            <form method="post" action="{% url 'pages:inscrever_evento' evento.id %}">
+                                {% csrf_token %}
+                                <div style="margin-bottom: 0.8rem;">
+                                    <input type="text" name="nome" placeholder="Seu Nome Completo" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                                </div>
+                                <div style="margin-bottom: 0.8rem;">
+                                    <input type="email" name="email" placeholder="Seu Endereço de Email" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                                </div>
+                                <div style="margin-bottom: 1.2rem;">
+                                    <input type="text" name="telefone" placeholder="Telefone de Contacto" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
+                                </div>
+                                <button type="submit" style="width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <i class="fas fa-check-circle"></i> Garantir minha Vaga
+                                </button>
+                                <p style="margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
+                                    Já é aluno? <a href="{% url 'pages:login' %}?next={{ request.path }}" style="color: var(--uan-blue); font-weight: 600;">Faça login aqui</a>
+                                </p>
+                            </form>
+                        {% else %}
+                            <div style="padding: 1.5rem; background: #fff3cd; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
+                                <i class="fas fa-lock" style="font-size: 2.5rem; color: #856404; margin-bottom: 0.5rem;"></i>
+                                <p style="margin: 0 0 1rem 0; color: #856404; font-weight: 600;">Evento reservado para Alunos</p>
+                            </div>
+                            <a href="{% url 'pages:login' %}?next={{ request.path }}" style="display: block; width: 100%; padding: 1rem; background: var(--uan-blue); color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
+                                <i class="fas fa-sign-in-alt"></i> Fazer Login
+                            </a>
+                        {% endif %}
                     {% endif %}
                 </div>
 

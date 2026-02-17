@@ -6,7 +6,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
 from .models import Noticia, Aluno, Evento
-from .forms import AlunoRegistroForm
+from .forms import AlunoRegistroForm, AlunoUpdateForm
 
 # Create your views here.
 class IndexView(ListView):
@@ -179,38 +179,78 @@ from django.views import View
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 
-class InscreverEventoView(LoginRequiredMixin, View):
-    login_url = 'pages:login'
-    
+class InscreverEventoView(View):
     def post(self, request, pk):
         from .models import Evento, InscricaoEvento
         
         evento = get_object_or_404(Evento, pk=pk)
         
-        # Verificar se o usuário é aluno
-        if not hasattr(request.user, 'aluno'):
-            messages.error(request, 'Apenas alunos podem se inscrever em eventos.')
+        # 1. Caminho para Usuário Autenticado (Aluno)
+        if request.user.is_authenticated:
+            if not hasattr(request.user, 'aluno'):
+                # Se for admin/staff sem perfil de aluno, e o evento permitir externo, tratar como externo ou sugerir criação de perfil
+                if not evento.exclusivo_alunos:
+                    return self._inscrever_externo(request, evento)
+                messages.error(request, 'Apenas alunos podem se inscrever neste evento exclusivo.')
+                return redirect('pages:evento_detail', pk=pk)
+            
+            # Verificar se já está inscrito
+            if InscricaoEvento.objects.filter(evento=evento, aluno=request.user.aluno).exists():
+                messages.warning(request, 'Você já está inscrito neste evento.')
+                return redirect('pages:evento_detail', pk=pk)
+            
+            # Verificar vagas
+            if evento.vagas_disponiveis() <= 0:
+                messages.error(request, 'Desculpe, as vagas para este evento estão esgotadas.')
+                return redirect('pages:evento_detail', pk=pk)
+            
+            # Criar inscrição de aluno
+            InscricaoEvento.objects.create(
+                evento=evento,
+                aluno=request.user.aluno,
+                confirmado=True
+            )
+            messages.success(request, f'Inscrição realizada com sucesso, {request.user.first_name}!')
             return redirect('pages:evento_detail', pk=pk)
+            
+        # 2. Caminho para Usuário Não Autenticado (Externo)
+        else:
+            if evento.exclusivo_alunos:
+                messages.error(request, 'Este evento é exclusivo para alunos. Por favor, faça login para se inscrever.')
+                return redirect('pages:login')
+            
+            return self._inscrever_externo(request, evento)
+
+    def _inscrever_externo(self, request, evento):
+        from .models import InscricaoEvento
         
-        # Verificar se já está inscrito
-        if InscricaoEvento.objects.filter(evento=evento, aluno=request.user.aluno).exists():
-            messages.warning(request, 'Você já está inscrito neste evento.')
-            return redirect('pages:evento_detail', pk=pk)
+        nome = request.POST.get('nome')
+        email = request.POST.get('email')
+        telefone = request.POST.get('telefone')
         
-        # Verificar vagas disponíveis
+        if not nome or not email:
+            messages.error(request, 'Nome e Email são obrigatórios para a inscrição.')
+            return redirect('pages:evento_detail', pk=evento.id)
+            
+        # Verificar vagas
         if evento.vagas_disponiveis() <= 0:
             messages.error(request, 'Desculpe, as vagas para este evento estão esgotadas.')
-            return redirect('pages:evento_detail', pk=pk)
-        
-        # Criar inscrição
+            return redirect('pages:evento_detail', pk=evento.id)
+            
+        # Evitar duplicados por email
+        if InscricaoEvento.objects.filter(evento=evento, email_externo=email).exists():
+            messages.warning(request, 'Este email já está inscrito neste evento.')
+            return redirect('pages:evento_detail', pk=evento.id)
+            
         InscricaoEvento.objects.create(
             evento=evento,
-            aluno=request.user.aluno,
+            nome_externo=nome,
+            email_externo=email,
+            telefone_externo=telefone,
             confirmado=True
         )
-        
-        messages.success(request, f'Inscrição realizada com sucesso! Você está inscrito em "{evento.titulo}".')
-        return redirect('pages:evento_detail', pk=pk)
+        messages.success(request, f'Inscrição pública realizada com sucesso! Bem-vindo, {nome}.')
+        return redirect('pages:evento_detail', pk=evento.id)
 
 class CancelarInscricaoView(LoginRequiredMixin, View):
     login_url = 'pages:login'
@@ -243,11 +283,12 @@ class MinhasInscricoesView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         from .models import InscricaoEvento
-        from django.utils import timezone
         
-        if hasattr(self.request.user, 'aluno'):
+        # Retorna as inscrições apenas se o perfil de aluno existir
+        aluno = getattr(self.request.user, 'aluno', None)
+        if aluno:
             return InscricaoEvento.objects.filter(
-                aluno=self.request.user.aluno
+                aluno=aluno
             ).select_related('evento').order_by('-data_inscricao')
         return InscricaoEvento.objects.none()
 
@@ -257,23 +298,55 @@ class PerfilView(LoginRequiredMixin, DetailView):
     context_object_name = 'aluno'
     
     def get_object(self):
-        return self.request.user.aluno
+        # Retorna o aluno se existir, senão retorna None
+        return getattr(self.request.user, 'aluno', None)
     
     def get_context_data(self, **kwargs):
+        # Força o objeto a ser o aluno (get_object já trata isso)
         context = super().get_context_data(**kwargs)
         from .models import InscricaoEvento
         from django.utils import timezone
         
-        # Eventos futuros inscritos
-        context['eventos_futuros'] = InscricaoEvento.objects.filter(
-            aluno=self.request.user.aluno,
-            evento__data__gte=timezone.now().date()
-        ).select_related('evento').order_by('evento__data')
-        
-        # Eventos passados
-        context['eventos_passados'] = InscricaoEvento.objects.filter(
-            aluno=self.request.user.aluno,
-            evento__data__lt=timezone.now().date()
-        ).select_related('evento').order_by('-evento__data')[:5]
-        
+        aluno = self.get_object()
+        if aluno:
+            # Eventos futuros inscritos
+            context['eventos_futuros'] = InscricaoEvento.objects.filter(
+                aluno=aluno,
+                evento__data__gte=timezone.now().date()
+            ).select_related('evento').order_by('evento__data')
+            
+            # Eventos passados
+            context['eventos_passados'] = InscricaoEvento.objects.filter(
+                aluno=aluno,
+                evento__data__lt=timezone.now().date()
+            ).select_related('evento').order_by('-evento__data')[:5]
+        else:
+            context['eventos_futuros'] = []
+            context['eventos_passados'] = []
+            
         return context
+
+from django.views.generic.edit import UpdateView
+
+class PerfilUpdateView(LoginRequiredMixin, UpdateView):
+    login_url = 'pages:login'
+    template_name = 'pages/perfil_edit.html'
+    form_class = AlunoUpdateForm
+    success_url = reverse_lazy('pages:perfil')
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not hasattr(request.user, 'aluno'):
+            messages.warning(request, "Você precisa preencher o seu perfil de estudante primeiro.")
+            return redirect('pages:perfil')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_object(self):
+        return getattr(self.request.user, 'aluno', None)
+
+    def form_valid(self, form):
+        messages.success(self.request, 'Perfil atualizado com sucesso!')
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        messages.error(self.request, 'Erro ao atualizar perfil. Verifique os dados.')
+        return super().form_invalid(form)

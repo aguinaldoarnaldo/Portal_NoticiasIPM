@@ -46,6 +46,7 @@ class Evento(models.Model):
     data = models.DateField(verbose_name='Data do Evento')
     descricao = models.TextField(blank=True, null=True, verbose_name='Descrição')
     vagas = models.IntegerField(default=50, verbose_name='Número de Vagas')
+    exclusivo_alunos = models.BooleanField(default=True, verbose_name='Exclusivo para Alunos')
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -80,16 +81,23 @@ class Aluno(models.Model):
 
 class InscricaoEvento(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)
-    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='inscricoes')
     evento = models.ForeignKey(Evento, on_delete=models.CASCADE, related_name='inscricoes')
+    aluno = models.ForeignKey(Aluno, on_delete=models.CASCADE, related_name='inscricoes', null=True, blank=True)
+    
+    # Campos para inscritos externos (não alunos)
+    nome_externo = models.CharField(max_length=255, null=True, blank=True, verbose_name='Nome (Externo)')
+    email_externo = models.EmailField(null=True, blank=True, verbose_name='Email (Externo)')
+    telefone_externo = models.CharField(max_length=20, null=True, blank=True, verbose_name='Telefone (Externo)')
+    
     data_inscricao = models.DateTimeField(auto_now_add=True)
     confirmado = models.BooleanField(default=True)
     
     class Meta:
         verbose_name = 'Inscrição em Evento'
         verbose_name_plural = 'Inscrições em Eventos'
-        unique_together = ['aluno', 'evento']  # Um aluno não pode se inscrever duas vezes no mesmo evento
         ordering = ['-data_inscricao']
     
     def __str__(self):
-        return f"{self.aluno.user.get_full_name()} - {self.evento.titulo}"
+        if self.aluno:
+            return f"{self.aluno.user.get_full_name()} - {self.evento.titulo}"
+        return f"{self.nome_externo} (Externo) - {self.evento.titulo}"

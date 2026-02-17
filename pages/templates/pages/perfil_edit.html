@@ -1,0 +1,294 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil | IPM</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="{% static 'js/theme-manager.js' %}"></script>
+    <style>
+        :root {
+            --uan-blue: #003366;
+            --uan-light-blue: #0088cc;
+            --uan-red: #cc0000;
+            --text-main: #333;
+            --text-muted: #666;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            background-color: var(--bg-light);
+            font-family: 'Inter', sans-serif;
+        }
+
+        .edit-container {
+            max-width: 800px;
+            margin: 4rem auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .edit-header {
+            background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue));
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .edit-header h1 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .edit-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+        }
+
+        .edit-content {
+            padding: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--uan-blue);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e1e1e1;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--uan-light-blue);
+            box-shadow: 0 0 0 4px rgba(0, 136, 204, 0.1);
+        }
+
+        .form-control-readonly {
+            background-color: #f8f9fa;
+            cursor: not-allowed;
+        }
+
+        .avatar-upload {
+            position: relative;
+            max-width: 150px;
+            margin: -75px auto 2rem;
+            z-index: 10;
+        }
+
+        .avatar-preview {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            border-radius: 50%;
+            border: 6px solid white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            background: #eee;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .avatar-edit {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            z-index: 1;
+        }
+
+        .avatar-edit input {
+            display: none;
+        }
+
+        .avatar-edit label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .avatar-edit label:hover {
+            background: var(--uan-light-blue);
+            color: white;
+        }
+
+        .btn-save {
+            width: 100%;
+            padding: 1.2rem;
+            background: var(--uan-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);
+        }
+
+        .btn-save:hover {
+            background: var(--uan-light-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 51, 102, 0.4);
+        }
+
+        .btn-cancel {
+            display: block;
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .btn-cancel:hover {
+            color: var(--uan-red);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .edit-content { padding: 1.5rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="edit-container">
+        <div class="edit-header">
+            <h1>Editar Perfil</h1>
+            <p>Mantenha seus dados sempre atualizados</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'pages:perfil_editar' %}">
+            {% csrf_token %}
+            
+            <div class="avatar-upload">
+                <div class="avatar-edit">
+                    <input type='file' name="foto" id="imageUpload" accept=".png, .jpg, .jpeg" />
+                    <label for="imageUpload"><i class="fas fa-camera"></i></label>
+                </div>
+                <div class="avatar-preview">
+                    {% if user.aluno.foto %}
+                        <img id="imagePreview" src="{{ user.aluno.foto.url }}" alt="Profile Picture">
+                    {% else %}
+                        <div id="initials" style="width: 100%; height: 100%; border-radius: 50%; background: #eee; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: var(--uan-blue); font-weight: 700;">
+                            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+                        </div>
+                        <img id="imagePreview" src="#" alt="Preview" style="display: none;">
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="edit-content">
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" name="first_name" value="{{ form.first_name.value }}" class="form-control" placeholder="Seu nome">
+                    </div>
+                    <div class="form-group">
+                        <label>Apelido</label>
+                        <input type="text" name="last_name" value="{{ form.last_name.value }}" class="form-control" placeholder="Seu apelido">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>E-mail Institucional</label>
+                    <input type="email" name="email" value="{{ form.email.value }}" class="form-control" placeholder="seuemail@ipm.edu.ao">
+                </div>
+
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Número de Estudante</label>
+                        {{ form.numero_estudante }}
+                    </div>
+                    <div class="form-group">
+                        <label>Ano de Ingresso</label>
+                        <input type="number" name="ano_ingresso" value="{{ form.ano_ingresso.value }}" class="form-control">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Curso</label>
+                    <input type="text" name="curso" value="{{ form.curso.value }}" class="form-control" placeholder="Seu curso">
+                </div>
+
+                <div class="form-group">
+                    <label>Telefone</label>
+                    <input type="text" name="telefone" value="{{ form.telefone.value|default:'' }}" class="form-control" placeholder="+244 ...">
+                </div>
+
+                <button type="submit" class="btn-save">
+                    <i class="fas fa-save"></i> Salvar Alterações
+                </button>
+
+                <a href="{% url 'pages:perfil' %}" class="btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar e Voltar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        // Image Preview Script
+        document.getElementById('imageUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const preview = document.getElementById('imagePreview');
+                    const initials = document.getElementById('initials');
+                    
+                    preview.src = event.target.result;
+                    preview.style.display = 'block';
+                    if (initials) initials.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+
+</html>
