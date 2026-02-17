@@ -1,7 +1,0 @@
-﻿UU core/__pycache__/settings.cpython-311.pyc
-UU pages/__pycache__/admin.cpython-311.pyc
-UU pages/__pycache__/models.cpython-311.pyc
-UU pages/__pycache__/urls.cpython-311.pyc
-UU pages/__pycache__/views.cpython-311.pyc
-?? git_merge_status.txt
-?? git_merge_status_utf8.txt
