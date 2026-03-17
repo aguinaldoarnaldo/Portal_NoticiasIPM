@@ -1,9 +1,9 @@
 # 📊 DIAGRAMAS UML DO SISTEMA
 ## Portal de Notícias IPM
 
-**Data:** 04 de Fevereiro de 2026  
-**Versão:** 2.0 (Atualizada)  
-**Status:** Sistema em Produção (95% completo)
+**Data:** 17 de Março de 2026  
+**Versão:** 3.0 (Atualizada)  
+**Status:** Sistema em Produção (Concluído)
 
 ---
 
@@ -16,6 +16,7 @@
 5. [Diagrama de Implementação](#diagrama-de-implementação)
 6. [Diagrama de Sequência](#diagrama-de-sequência)
 7. [Diagrama de Atividades](#diagrama-de-atividades)
+8. [Diagrama de Navegação e Fluxo do Sistema](#diagrama-de-navegação-e-fluxo-do-sistema)
 
 ---
 
@@ -56,15 +57,17 @@ graph TB
         UC17[Criar Evento]
         UC18[Editar Evento]
         UC19[Excluir Evento]
-        UC20[Gerenciar Categorias]
         UC21[Gerenciar Alunos]
         UC22[Ver Inscritos em Evento]
+        UC23[Editar Meu Perfil]
+        UC24[Inscrever-se como Visitante]
     end
     
     %% Atores
     Visitante((Visitante))
     Aluno((Aluno))
-    Admin((Administrador))
+    Gestor((Gestor de Conteúdo))
+    Admin((Administrador Geral))
     
     %% Relacionamentos - Visitante
     Visitante --> UC1
@@ -74,6 +77,7 @@ graph TB
     Visitante --> UC5
     Visitante --> UC6
     Visitante --> UC7
+    Visitante --> UC24
     
     %% Relacionamentos - Aluno (herda de Visitante)
     Aluno --> UC1
@@ -87,8 +91,19 @@ graph TB
     Aluno --> UC11
     Aluno --> UC12
     Aluno --> UC13
+    Aluno --> UC23
+
+    %% Relacionamentos - Gestor (Focado em Conteúdo)
+    Gestor --> UC7
+    Gestor --> UC14
+    Gestor --> UC15
+    Gestor --> UC17
+    Gestor --> UC18
+    Gestor --> UC20
+    Gestor --> UC22
     
-    %% Relacionamentos - Admin
+    %% Relacionamentos - Admin (Controle Total)
+    Admin --> UC7
     Admin --> UC14
     Admin --> UC15
     Admin --> UC16
@@ -123,17 +138,24 @@ graph TB
 11. **UC11 - Ver Minhas Inscrições**: Listar todos os eventos inscritos
 12. **UC12 - Visualizar Meu Perfil**: Ver dados pessoais e histórico
 13. **UC13 - Fazer Logout**: Sair do sistema
+23. **UC23 - Editar Meu Perfil**: Atualizar dados cadastrais e foto
 
-#### **Administrador:**
-14. **UC14 - Criar Notícia**: Adicionar nova notícia ao sistema
-15. **UC15 - Editar Notícia**: Modificar notícia existente
-16. **UC16 - Excluir Notícia**: Remover notícia do sistema
-17. **UC17 - Criar Evento**: Adicionar novo evento
-18. **UC18 - Editar Evento**: Modificar evento existente
-19. **UC19 - Excluir Evento**: Remover evento
-20. **UC20 - Gerenciar Categorias**: CRUD de categorias de notícias
-21. **UC21 - Gerenciar Alunos**: Visualizar e gerenciar alunos cadastrados
-22. **UC22 - Ver Inscritos em Evento**: Listar alunos inscritos em cada evento
+#### **Visitante (Funcionalidades Adicionais):**
+24. **UC24 - Inscrever-se como Visitante**: Inscrição em eventos não exclusivos preenchendo formulário externo.
+
+#### **Gestor de Conteúdo (Staff):**
+- Operador do sistema focado em manter o portal atualizado.
+14. **UC14 - Criar Notícia**
+15. **UC15 - Editar Notícia**
+17. **UC17 - Criar Evento**
+20. **UC20 - Gerenciar Categorias**
+
+#### **Administrador Geral (Superuser):**
+- Possui controle total, incluindo gestão de pessoas e exclusões críticas.
+16. **UC16 - Excluir Notícia** (Apenas Admin pode apagar permanentemente)
+19. **UC19 - Excluir Evento**
+21. **UC21 - Gerenciar Alunos** (Aprovação de contas e perfis)
+22. **UC22 - Ver Inscritos em Evento**
 
 ---
 
@@ -146,118 +168,157 @@ Representa a estrutura estática do sistema, mostrando classes, atributos, méto
 classDiagram
     %% Classe User (Django padrão)
     class User {
-        +int id
-        +string username
-        +string email
-        +string first_name
-        +string last_name
-        +string password
-        +boolean is_staff
-        +boolean is_active
-        +datetime date_joined
-        +get_full_name()
-        +check_password()
+        -int id
+        -string username
+        -string email
+        -string first_name
+        -string last_name
+        -string password
+        -boolean is_staff
+        -boolean is_active
+        -datetime date_joined
+        +obter_nome_completo()
+        +obter_nome_curto()
+        +verificar_senha(senha)
+        +definir_senha(senha)
     }
     
     %% Classe Aluno
     class Aluno {
-        +UUID id
-        +User user
-        +string numero_estudante
-        +string curso
-        +int ano_ingresso
-        +string telefone
-        +ImageField foto
-        +datetime criado_em
+        -UUID id
+        -User user
+        -string nome
+        -string numero_estudante
+        -string curso
+        -int ano_ingresso
+        -string telefone
+        -ImageField foto
+        -datetime criado_em
         +__str__()
+        +obter_meus_eventos()
+        +atualizar_dados_perfil()
     }
     
     %% Classe Categoria
     class Categoria {
-        +UUID id
-        +string categoria
-        +datetime criado_em
+        -UUID id
+        -string categoria
+        -datetime criado_em
         +__str__()
+        +contar_noticias()
     }
     
     %% Classe Noticia
     class Noticia {
-        +UUID id
-        +string titulo
-        +string subtitulo
-        +TextField conteudo
-        +Categoria categoria
-        +ImageField imagem
-        +datetime publicado_em
-        +boolean status
-        +boolean exclusivo_alunos
-        +datetime criado_em
-        +datetime atualizado_em
+        -UUID id
+        -string titulo
+        -string subtitulo
+        -TextField conteudo
+        -string autor
+        -Categoria categoria
+        -ImageField imagem
+        -datetime publicado_em
+        -datetime atualizado_em
+        -boolean status
+        -boolean exclusivo_alunos
+        -datetime criado_em
         +__str__()
+        +obter_url_absoluta()
+        +e_recente()
     }
     
     %% Classe Evento
     class Evento {
-        +UUID id
-        +string titulo
-        +TextField descricao
-        +date data
-        +int vagas
-        +datetime criado_em
-        +vagas_disponiveis()
+        -UUID id
+        -string titulo
+        -TextField descricao
+        -date data
+        -int vagas
+        -boolean exclusivo_alunos
+        -datetime criado_em
         +__str__()
+        +vagas_disponiveis()
+        +esta_lotado()
     }
     
     %% Classe InscricaoEvento
     class InscricaoEvento {
-        +UUID id
-        +Aluno aluno
-        +Evento evento
-        +datetime data_inscricao
-        +boolean confirmado
+        -UUID id
+        -Aluno aluno
+        -Evento evento
+        -string nome_externo
+        -string email_externo
+        -string telefone_externo
+        -datetime data_inscricao
+        -boolean confirmado
         +__str__()
+        +confirmar_inscricao()
+        +e_externo()
     }
     
     %% Relacionamentos
-    User "1" --> "1" Aluno : possui
+    User "1" <|-- "1" Administrador_Geral : é um (Superuser)
+    User "1" <|-- "1" Gestor_Conteudo : é um (Staff)
+    User "1" --> "0..1" Aluno : possui
+    
+    Gestor_Conteudo "1" --> "0..*" Noticia : cria/edita
+    Gestor_Conteudo "1" --> "0..*" Evento : cria/edita
+    
+    Administrador_Geral "1" --> "1" Gestor_Conteudo : supervisiona
+    Administrador_Geral "1" --> "0..*" Aluno : gerencia
+    Administrador_Geral "1" --> "0..*" Noticia : modera/exclui
+    
     Categoria "1" --> "0..*" Noticia : categoriza
-    Evento "1" --> "0..*" InscricaoEvento : tem
-    Aluno "1" --> "0..*" InscricaoEvento : faz
+    
+    Evento "1" --> "0..*" InscricaoEvento : possui
+    Aluno "1" --> "0..*" InscricaoEvento : realiza
+    Visitante "1" --> "0..*" InscricaoEvento : realiza (externo)
     
     %% Notas
-    note for User "Modelo padrão do Django\ndjango.contrib.auth.models"
-    note for InscricaoEvento "Relacionamento Many-to-Many\nentre Aluno e Evento"
+    note for User "Modelo central de Autenticação"
+    note for Administrador "Usuário com is_staff=True\nAcesso total ao Back-office"
+    note for Visitante "Usuário não autenticado\nPode ver notícias e se inscrever em eventos"
+    note for InscricaoEvento "Pode estar ligada a um Aluno\nOU conter dados de um Visitante"
 ```
 
 ### Detalhamento das Classes
 
 #### **User (Django Auth)**
-- Modelo padrão do Django para autenticação
-- Gerencia credenciais e permissões
+- Modelo central do Django para autenticação.
+- Gerencia credenciais e permissões.
+
+#### **Administrador**
+- Especialização do `User` com permissões elevadas.
+- Responsável por todo o CRUD (Criar, Ler, Atualizar, Deletar) do sistema.
+
+#### **Visitante**
+- Representa o público externo.
+- Embora não tenha conta no banco, interage com o sistema através de inscrições em eventos (usando campos externos na tabela `InscricaoEvento`).
 
 #### **Aluno**
-- Estende User com informações acadêmicas
-- Relacionamento OneToOne com User
-- Armazena dados específicos do estudante
+- Estende `User` com informações acadêmicas.
+- Relacionamento Opcional (0..1) com `User` (pois o perfil pode ser criado depois ou o aluno pode ser pré-cadastrado).
+- Armazena dados específicos do estudante.
 
 #### **Categoria**
-- Classifica notícias por tema
-- Relacionamento OneToMany com Notícia
+- Classifica notícias por tema.
+- Relacionamento Um-para-Muitos com Notícia.
 
 #### **Noticia**
-- Conteúdo principal do portal
-- Pode ser pública ou exclusiva para alunos
-- Possui categoria, imagem e status
+- Conteúdo principal do portal.
+- Pode ser pública ou exclusiva para alunos.
+- Possui categoria, imagem e status.
 
 #### **Evento**
-- Eventos institucionais do IPM
-- Controla vagas disponíveis
-- Método `vagas_disponiveis()` calcula vagas restantes
+- Eventos institucionais do IPM.
+- Controla vagas disponíveis e visibilidade.
 
 #### **InscricaoEvento**
-- Tabela de associação entre Aluno e Evento
-- Implementa Many-to-Many com dados extras
-- Unique constraint: um aluno não pode se inscrever duas vezes no mesmo evento
+- Tabela que registra o interesse em um evento.
+- **Flexível**: Pode apontar para um `Aluno` cadastrado OU armazenar `nome/email` de um `Visitante`.
+- Implementa Many-to-Many ou Inscrição Singular
+- Possui campos para dados externos (`nome`, `email`, `telefone`) caso o inscrito não seja um Aluno logado.
+- Unique constraint: um aluno (ou email externo) não pode se inscrever duas vezes no mesmo evento
 
 ---
 
@@ -313,7 +374,7 @@ graph TB
 - **2 Categorias** de notícias
 - **2 Notícias** publicadas (1 pública, 1 exclusiva)
 - **1 Evento** (Hackathon IPM 2026)
-- **2 Inscrições** no evento
+- **2 Inscrições** no evento (podendo ser Alunos ou Externos)
 
 ---
 
@@ -385,8 +446,11 @@ erDiagram
     
     INSCRICAO_EVENTO {
         uuid id PK
-        uuid aluno_id FK
+        uuid aluno_id FK "pode ser null"
         uuid evento_id FK
+        string nome_externo
+        string email_externo
+        string telefone_externo
         datetime data_inscricao
         boolean confirmado
     }
@@ -572,8 +636,18 @@ sequenceDiagram
         
         View->>View: Verifica se é aluno
         alt Não é aluno
-            View-->>Browser: Mensagem de erro
-            Browser-->>Aluno: "Apenas alunos podem se inscrever"
+            View->>Model: Verifica se evento é exclusivo
+            alt Exclusivo para Alunos
+                View-->>Browser: Mensagem de erro
+                Browser-->>Aluno: "Apenas alunos podem se inscrever"
+            else Aberto ao Público
+                View->>View: Processa inscrição externa (nome, email)
+                View->>Model: Salva InscricaoEvento com dados externos
+                Model->>DB: INSERT INTO inscricao_evento
+                DB-->>Model: Sucesso
+                View-->>Browser: Mensagem de sucesso
+                Browser-->>Aluno: "Inscrição realizada com sucesso!"
+            end
         else É aluno
             View->>Model: Verifica inscrição existente
             Model->>DB: SELECT * FROM inscricao WHERE aluno=? AND evento=?
@@ -592,7 +666,7 @@ sequenceDiagram
                     View-->>Browser: Mensagem de erro
                     Browser-->>Aluno: "Vagas esgotadas"
                 else Com vagas
-                    View->>Model: Cria InscricaoEvento
+                    View->>Model: Cria InscricaoEvento para Aluno
                     Model->>DB: INSERT INTO inscricao_evento
                     DB-->>Model: Sucesso
                     Model-->>View: Inscrição criada
@@ -658,6 +732,62 @@ flowchart TD
 
 ---
 
+## 8. DIAGRAMA DE NAVEGAÇÃO E FLUXO DO SISTEMA
+
+### Descrição
+Representa a jornada do dado, desde a criação na **Parte Administrativa (Back-Office)** até o consumo e interação no **Portal Público (Front-Office)**.
+
+```mermaid
+graph TD
+    subgraph AdminSection ["🛡️ PARTE ADMINISTRATIVA (DJANGO ADMIN - JAZZMIN)"]
+        A1[Login Admin] --> A2[Painel de Controle]
+        A2 --> A3{Gerenciar Dados}
+        A3 -->|CRUD| A4[Notícias e Categorias]
+        A3 -->|CRUD| A5[Eventos e Vagas]
+        A3 -->|CRUD| A6[Usuários e Alunos]
+        
+        A4 & A5 & A6 --> DB[(Banco de Dados<br/>SQLite3)]
+    end
+
+    subgraph PortalSection ["🌐 PORTAL DE NOTÍCIAS (FRONT-OFFICE)"]
+        P1[Usuário Acessa Home] --> P2{Tipo de Usuário?}
+        
+        P2 -->|Visitante| P3[Home / Notícias Públicas]
+        P2 -->|Aluno Logado| P4[Home / Todas as Notícias]
+        
+        P3 --> P5[Filtrar por Categoria]
+        P3 --> P6[Ver Eventos Públicos]
+        P3 --> P7[Assistir Banner Destaque]
+        
+        P4 --> P8[Acessar Notícias Exclusivas]
+        P4 --> P9[Inscrição em Eventos]
+        P4 --> P10[Meu Perfil / Histórico]
+        
+        P9 --> P11{Inscrição Válida?}
+        P11 -->|Sim| DB
+        P11 -->|Não| P9
+    end
+
+    %% Conexão entre mundos
+    DB -.->|Provê dados| P1
+    DB -.->|Armazena| A4
+    DB -.->|Armazena| A5
+    DB -.->|Armazena| A6
+
+    %% Estilos
+    style AdminSection fill:#f9f,stroke:#333,stroke-width:2px
+    style PortalSection fill:#bbf,stroke:#333,stroke-width:2px
+    style DB fill:#ff9,stroke:#333,stroke-width:4px
+```
+
+### Explicação do Fluxo:
+1. **Alimentação (Admin):** O Administrador preenche as notícias, cria eventos e gerencia as categorias através do tema **Jazzmin**. Todos esses dados são persistidos no **SQLite3**.
+2. **Consumo (Portal):** Quando um Visitante ou Aluno acessa o portal, o Django verifica no banco o que pode ser exibido (ex: `status=True`, `exclusivo_alunos=False`).
+3. **Interação (Portal -> Admin):** As inscrições realizadas por alunos ou visitantes externos circulam do Portal para o Banco de Dados, onde ficam disponíveis no Admin para conferência.
+4. **Segregação:** Este fluxo demonstra como as configurações feitas no **Back-office** impactam diretamente a experiência do usuário no **Front-office**.
+
+---
+
 ## 📝 NOTAS IMPORTANTES
 
 ### Convenções Utilizadas
@@ -684,6 +814,6 @@ Estes diagramas devem ser atualizados sempre que houver:
 
 ---
 
-**Última Atualização:** 04/02/2026 01:04  
+**Última Atualização:** 17/03/2026 17:55  
 **Desenvolvido por:** Grupo Número 6  
 **Instituição:** Instituto Politécnico do Mayombe
