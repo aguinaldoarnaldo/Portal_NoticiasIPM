@@ -63,7 +63,8 @@ class Evento(models.Model):
         return max(0, self.vagas - inscritos)
 
 class Aluno(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='aluno')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='aluno', null=True, blank=True, verbose_name='Utilizador Associado')
+    nome = models.CharField(max_length=255, verbose_name='Nome Completo', null=True, blank=True)
     numero_estudante = models.CharField(max_length=20, unique=True, verbose_name='Número de Estudante')
     curso = models.CharField(max_length=200, verbose_name='Curso')
     ano_ingresso = models.IntegerField(verbose_name='Ano de Ingresso')
@@ -77,7 +78,9 @@ class Aluno(models.Model):
         ordering = ['user__first_name']
     
     def __str__(self):
-        return f"{self.numero_estudante} - {self.user.get_full_name()}"
+        if self.user:
+            return f"{self.numero_estudante} - {self.user.get_full_name()}"
+        return f"{self.numero_estudante} - {self.nome or 'Estudante sem nome'}"
 
 class InscricaoEvento(models.Model):
     id = models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True)

@@ -43,14 +43,17 @@ class EventoAdmin(admin.ModelAdmin):
 @admin.register(Aluno)
 class AlunoAdmin(admin.ModelAdmin):
     list_display = ('numero_estudante', 'get_nome_completo', 'curso', 'ano_ingresso', 'criado_em')
-    search_fields = ('numero_estudante', 'user__first_name', 'user__last_name', 'curso')
+    search_fields = ('numero_estudante', 'nome', 'user__first_name', 'user__last_name', 'curso')
     list_filter = ('curso', 'ano_ingresso')
-    ordering = ('user__first_name',)
+    ordering = ('nome', 'user__first_name')
     readonly_fields = ('criado_em',)
+    raw_id_fields = ('user',) # Typable ID instead of a massive dropdown list
     
     def get_nome_completo(self, obj):
-        return obj.user.get_full_name()
-    get_nome_completo.short_description = 'Nome Completo'
+        if obj.user:
+            return obj.user.get_full_name()
+        return obj.nome or "---"
+    get_nome_completo.short_description = 'Nome do Aluno'
 
 @admin.register(InscricaoEvento)
 class InscricaoEventoAdmin(admin.ModelAdmin):
@@ -80,7 +83,9 @@ class InscricaoEventoAdmin(admin.ModelAdmin):
     
     def get_participante(self, obj):
         if obj.aluno:
-            return obj.aluno.user.get_full_name()
+            if obj.aluno.user:
+                return obj.aluno.user.get_full_name()
+            return obj.aluno.nome or f"Estudante ({obj.aluno.numero_estudante})"
         return obj.nome_externo
     get_participante.short_description = 'Participante'
 

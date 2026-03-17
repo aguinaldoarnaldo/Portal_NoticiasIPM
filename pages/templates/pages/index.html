@@ -8,6 +8,8 @@
     <title>IPM | Jornal Estudantil</title>
     <link rel="stylesheet" href="{% static 'css/styles.css' %}">
     <link rel="stylesheet" href="{% static 'css/animations.css' %}">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+    <!-- FontAwesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="{% static 'js/theme-manager.js' %}"></script>
 </head>
@@ -17,14 +19,14 @@
     <header class="main-header">
         <!-- University Top Bar -->
         <div class="header-top-bar">
-            <div class="container header-top-inner">
+            <div class="header-top-inner">
                 <div class="header-contact">
                     <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
                     <span><i class="fas fa-phone"></i> +244 923 456 789</span>
                 </div>
                 <div class="header-links">
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
+                    <a href="#" class="portal-link"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
+                    <a href="#" class="portal-link"><i class="fas fa-user-friends"></i> Portal do Encarregado</a>
                 </div>
             </div>
         </div>
@@ -48,10 +50,35 @@
                     <li><a href="{% url 'pages:eventos' %}">Eventos</a></li>
                     <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
                 </ul>
+                
+                <!-- Auth Buttons for Mobile -->
+                <div class="mobile-auth-container">
+                    {% if user.is_authenticated %}
+                        <div class="mobile-user-info">
+                            <span class="mobile-welcome">Olá, {{ user.first_name|default:user.username }}</span>
+                        </div>
+                        <a href="{% url 'pages:perfil' %}" class="mobile-auth-btn profile-btn">
+                            <i class="fas fa-user-circle"></i> Meu Perfil
+                        </a>
+                        <form method="post" action="{% url 'pages:logout' %}" style="width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="mobile-auth-btn logout-btn" style="width: 100%; border: none; cursor: pointer;">
+                                <i class="fas fa-sign-out-alt"></i> Sair
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'pages:login' %}" class="mobile-auth-btn login-btn">
+                            <i class="fas fa-sign-in-alt"></i> Entrar
+                        </a>
+                        <a href="{% url 'pages:registro' %}" class="mobile-auth-btn register-btn">
+                            <i class="fas fa-user-plus"></i> Criar Conta
+                        </a>
+                    {% endif %}
+                </div>
             </nav>
             
-            <!-- Botões de Autenticação -->
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-left: 0.75rem;">
+            <!-- Botões de Autenticação (Desktop) -->
+            <div class="desktop-auth-container">
                 {% if user.is_authenticated %}
                     <!-- User Profile Dropdown -->
                     <div style="position: relative;">
@@ -119,157 +146,16 @@
             </div>
             
             <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
-                <i class="fas fa-bars"></i>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
             </button>
         </div>
     </header>
+
     {% block hero %}{% endblock %}
+
     {% block content %}
-    <style>
-        /* Slider Specific Styles */
-        .slider-section {
-            position: relative;
-            height: 75vh; /* Taller on desktop to show more of the image */
-            min-height: 500px;
-            max-height: 750px;
-            background-color: #000;
-            overflow: hidden;
-        }
-        
-        .slide {
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            transition: opacity 1.2s ease-in-out;
-            display: flex;
-            align-items: flex-end; 
-            z-index: 1;
-        }
-
-        .slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 25%; /* Shows more of the top/middle part of the photo */
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: -1;
-            transition: transform 8s linear; /* Slow zoom effect */
-            transform: scale(1.1);
-        }
-        
-        .slide.active {
-            opacity: 1;
-            z-index: 2;
-        }
-
-        .slide.active img {
-            transform: scale(1); /* Zooms out slowly when active */
-        }
-        
-        .slide-overlay {
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.4) 25%, transparent 50%);
-            position: absolute;
-            inset: 0;
-            z-index: 1;
-        }
-        
-        .slide-content {
-            position: relative;
-            z-index: 3;
-            width: 100%;
-            padding: 4rem 5%;
-            color: #fff;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        .slide-badge {
-            background-color: var(--uan-yellow);
-            color: var(--uan-blue);
-            padding: 0.35rem 1rem;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            border-radius: 4px;
-            display: inline-block;
-            margin-bottom: 1rem;
-            letter-spacing: 1px;
-        }
-        
-        .slide-content h1 {
-            font-size: clamp(2.2rem, 6vw, 4rem);
-            margin-bottom: 1rem;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            line-height: 1.1;
-            font-weight: 800;
-        }
-        
-        .slide-content p {
-            font-size: 1.25rem;
-            margin-bottom: 2rem;
-            max-width: 850px;
-            color: rgba(255, 255, 255, 0.95);
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        
-        .slider-nav {
-            position: absolute;
-            bottom: 4rem;
-            right: 5%;
-            z-index: 10;
-            display: flex;
-            gap: 0.75rem;
-        }
-        
-        .slider-dot {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.3);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            border: 2px solid transparent;
-        }
-        
-        .slider-dot.active {
-            background: var(--uan-yellow);
-            transform: scale(1.3);
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
-        }
-
-        /* Mobile Adjustments for Slider */
-        @media (max-width: 768px) {
-            .slider-section {
-                height: 55vh;
-                min-height: 380px;
-            }
-            .slide-content {
-                padding-bottom: 6rem;
-                text-align: center;
-            }
-            .slide-content h1 {
-                font-size: 2rem;
-            }
-            .slide-content p {
-                font-size: 1rem;
-                margin: 0 auto 1.5rem;
-            }
-            .slider-nav {
-                bottom: 2rem;
-                right: 50%;
-                transform: translateX(50%);
-            }
-        }
-    </style>
-
     <section class="slider-section">
         <div class="slider-container" id="heroSlider">
             {% for noticia in banner_noticias %}
@@ -278,9 +164,11 @@
                 <div class="slide-overlay"></div>
                 <div class="slide-content">
                     <span class="slide-badge">{{ noticia.categoria.categoria }}</span>
-                    <h1><a href="{% url 'pages:noticia_detail' noticia.id %}" style="color: white;">{{ noticia.titulo }}</a></h1>
-                    <p>{{ noticia.subtitulo|default:noticia.conteudo|striptags }}</p>
-                    <a href="{% url 'pages:noticia_detail' noticia.id %}" class="btn-primary" style="background: var(--uan-red); border: none; padding: 0.6rem 1.5rem;">Ler Artigo</a>
+                    <h1><a href="{% url 'pages:noticia_detail' noticia.id %}">{{ noticia.titulo }}</a></h1>
+                    <p>{{ noticia.subtitulo|default:noticia.conteudo|striptags|truncatewords:30 }}</p>
+                    <a href="{% url 'pages:noticia_detail' noticia.id %}" class="btn-primary">
+                        Ler Artigo <i class="fas fa-arrow-right"></i>
+                    </a>
                 </div>
             </div>
             {% empty %}
@@ -290,7 +178,10 @@
                 <div class="slide-content">
                     <span class="slide-badge">BEM-VINDO</span>
                     <h1>Portal Institucional do IPM</h1>
-                    <p>Excelência no Ensino e Inovação para o Futuro de Angola.</p>
+                    <p>Excelência no Ensino e Inovação para o Futuro de Angola. Acompanhe as principais notícias e eventos da nossa instituição.</p>
+                    <a href="{% url 'pages:notice' %}" class="btn-primary">
+                        Ver Notícias <i class="fas fa-newspaper"></i>
+                    </a>
                 </div>
             </div>
             {% endfor %}
@@ -383,20 +274,28 @@
             <div class="highlight-cards">
                 <article class="card">
                     <div class="card-content">
-                        <h3>Engenharia Informática</h3>
+                        <h3> Informática</h3>
                         <p>Formação sólida em desenvolvimento de software, redes e sistemas.</p>
                     </div>
                 </article>
                 <article class="card">
                     <div class="card-content">
                         <h3>Contabilidade e Gestão</h3>
+                        <p> 
+                            Formação sólida em contabilidade e gestão para o mercado de trabalho.
+                        </p>
+                    </div>
+                </article>
+                <article class="card">
+                    <div class="card-content">
+                        <h3>Gestão Empresarial</h3>
                         <p>Prepare-se para liderar no mundo corporativo e financeiro.</p>
                     </div>
                 </article>
                 <article class="card">
                     <div class="card-content">
-                        <h3>Psicologia Clínica</h3>
-                        <p>Compreenda a mente humana e promova a saúde mental.</p>
+                        <h3>Informática de Gestão</h3>
+                        <p>Desenvolva competências técnicas e de gestão para o mercado de trabalho.</p>
                     </div>
                 </article>
             </div>
@@ -439,7 +338,7 @@
                     </div>
                     <div>
                         <h4 style="margin-bottom: 0.5rem;">Endereço</h4>
-                        <p style="color: var(--text-muted);">Rua Principal, Cabinda, Mayombe - Angola</p>
+                        <p style="color: var(--text-muted);">Icole e Bengo, Angola</p>
                     </div>
                 </article>
 
@@ -539,7 +438,7 @@
                             <div>
                                 <p style="margin: 0; color: rgba(255,255,255,0.9); line-height: 1.6;">
                                     Rua Principal do Mayombe<br>
-                                    Cabinda, Angola
+                                    Icole e Bengo, Angola
                                 </p>
                             </div>
                         </li>
@@ -590,134 +489,44 @@
             });
         }
         
-        // Card Animation Index - for staggered animations
-        document.querySelectorAll('.card').forEach((card, index) => {
-            card.style.setProperty('--card-index', index);
-        });
-
-        // Smooth hover effects for cards
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('mouseenter', () => {
-                card.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-            });
-            card.addEventListener('mouseleave', () => {
-                card.style.borderColor = 'var(--glass-border)';
-            });
-        });
-
-        // --- OBSERVER FOR ANIMATIONS ---
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -50px 0px'
-        };
-
-        const clearInlineStyles = (el) => {
-            setTimeout(() => {
-                el.style.transform = '';
-                el.style.transition = '';
-            }, 1000);
-        };
-
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                    clearInlineStyles(entry.target);
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        // Initialize animation for elements
-        document.querySelectorAll('.card, .news-item, .widget').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-            observer.observe(el);
-        });
-
         // --- HERO SLIDER (BANNER) ---
         document.addEventListener('DOMContentLoaded', function() {
             const slides = document.querySelectorAll('.slide');
             const dots = document.querySelectorAll('.slider-dot');
             const sliderContainer = document.getElementById('heroSlider');
             
-            // Safety check
             if (slides.length === 0) return;
 
             let currentSlide = 0;
             let slideInterval;
-            const intervalTime = 4000; // 4 seconds
+            const intervalTime = 4000;
 
-            // Helper to activate a specific slide
             function activateSlide(index) {
-                // Ensure index is valid
                 if (index < 0) index = slides.length - 1;
                 if (index >= slides.length) index = 0;
-
-                // Remove active class from all
                 slides.forEach(s => s.classList.remove('active'));
                 dots.forEach(d => d.classList.remove('active'));
-
-                // Add active to current
                 slides[index].classList.add('active');
                 if (dots[index]) dots[index].classList.add('active');
-                
                 currentSlide = index;
             }
 
-            function nextSlide() {
-                activateSlide(currentSlide + 1);
-            }
+            function nextSlide() { activateSlide(currentSlide + 1); }
+            function startTimer() { slideInterval = setInterval(nextSlide, intervalTime); }
+            function stopTimer() { clearInterval(slideInterval); }
 
-            function startTimer() {
-                clearInterval(slideInterval);
-                if (slides.length > 1) {
-                    slideInterval = setInterval(nextSlide, intervalTime);
-                }
-            }
-
-            function stopTimer() {
-                clearInterval(slideInterval);
-            }
-
-            // Expose goToSlide globally if still needed, but prefer internal use
-            window.goToSlide = function(index) {
-                stopTimer();
-                activateSlide(index);
-                startTimer();
-            };
-
-            // Add click listeners to dots
             dots.forEach(dot => {
                 dot.addEventListener('click', function() {
-                    const index = parseInt(this.getAttribute('data-index'));
-                    window.goToSlide(index);
+                    activateSlide(parseInt(this.getAttribute('data-index')));
                 });
             });
 
-            // Hover effects
             if (sliderContainer) {
                 sliderContainer.addEventListener('mouseenter', stopTimer);
                 sliderContainer.addEventListener('mouseleave', startTimer);
             }
-
-            // Initialize
-            // Ensure at least one slide is active if HTML didn't set it (fallback)
-            if (!document.querySelector('.slide.active')) {
-                activateSlide(0);
-            } else {
-                // Determine current slide index based on DOM
-                slides.forEach((s, i) => {
-                    if (s.classList.contains('active')) currentSlide = i;
-                });
-            }
-
-            // Start auto rotation
             startTimer();
         });
     </script>
 </body>
-
 </html>

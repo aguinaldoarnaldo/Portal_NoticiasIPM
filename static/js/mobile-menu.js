@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             e.stopPropagation();
             
             const isOpen = nav.classList.toggle('active');
-            icon.className = isOpen ? 'fas fa-times' : 'fas fa-bars';
+            menuBtn.classList.toggle('active'); // Toggle state for hamburger lines
             
             // Lock body scroll when menu is open
             document.body.style.overflow = isOpen ? 'hidden' : '';
@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', (e) => {
             if (nav.classList.contains('active') && !nav.contains(e.target) && !menuBtn.contains(e.target)) {
                 nav.classList.remove('active');
-                icon.className = 'fas fa-bars';
+                menuBtn.classList.remove('active'); // Reset hamburger lines
                 document.body.style.overflow = '';
             }
         });

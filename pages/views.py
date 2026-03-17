@@ -1,6 +1,4 @@
-from django.views.generic.list import ListView
-from django.views.generic.detail import DetailView
-from django.views.generic import CreateView
+from django.views.generic import CreateView, DetailView, ListView, FormView
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
@@ -24,6 +22,7 @@ class IndexView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from .models import Evento
+        from .forms import AlunoRegistroForm
         from django.utils import timezone
         
         # Get 5 latest news for banner slider
@@ -34,13 +33,17 @@ class IndexView(ListView):
         
         # Get upcoming events
         context['eventos'] = Evento.objects.filter(data__gte=timezone.now().date()).order_by('data')[:5]
+        
+        # Form for registration modal
+        context['registro_form'] = AlunoRegistroForm()
+        
         return context
 
 class NoticesView(ListView):
     model = Noticia
     template_name = 'pages/noticia.html'
     context_object_name = 'noticias'
-    paginate_by = 12  # Aumentado de 6 para 12
+    paginate_by = 32
 
     def get_queryset(self):
         # Filtrar notícias baseado no status de login
@@ -76,7 +79,7 @@ class CategoryNoticeView(ListView):
     model = Noticia
     template_name = 'pages/noticia.html'
     context_object_name = 'noticias'
-    paginate_by = 12  # Aumentado de 6 para 12
+    paginate_by = 32
 
     def get_queryset(self):
         category_name = self.kwargs.get('categoria_nome')
@@ -136,18 +139,19 @@ class CustomLoginView(LoginView):
         messages.error(self.request, 'Nome de utilizador ou senha incorretos.')
         return super().form_invalid(form)
 
-class AlunoRegistroView(CreateView):
+class AlunoRegistroView(FormView):
     form_class = AlunoRegistroForm
     template_name = 'pages/registro.html'
     success_url = reverse_lazy('pages:login')
     
     def form_valid(self, form):
-        response = super().form_valid(form)
+        form.save()
         messages.success(self.request, 'Conta criada com sucesso! Faça login para continuar.')
-        return response
-    
+        return super().form_valid(form)
+
     def form_invalid(self, form):
         messages.error(self.request, 'Erro ao criar conta. Verifique os dados e tente novamente.')
+        return super().form_invalid(form)
         return super().form_invalid(form)
 
 class CustomLogoutView(LogoutView):

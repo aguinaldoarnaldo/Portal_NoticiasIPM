@@ -1,333 +1,221 @@
+{% extends 'pages/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ evento.titulo }} | IPM Eventos</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="{% static 'js/theme-manager.js' %}"></script>
-</head>
+{% block title %}{{ evento.titulo }} | IPM Eventos{% endblock %}
 
-<body>
-    <header class="main-header">
-        <div class="header-top-bar">
-            <div class="container header-top-inner">
-                <div class="header-contact">
-                    <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
-                    <span><i class="fas fa-phone"></i> +244 923 456 789</span>
+{% block content %}
+<main class="container" style="margin-top: 2rem;">
+    <div class="event-detail-wrapper">
+        <div class="event-main-content">
+            <header class="event-header-info">
+                <div class="event-date-large">
+                    <span class="day">{{ evento.data|date:"d" }}</span>
+                    <span class="month">{{ evento.data|date:"M" }}</span>
                 </div>
-                <div class="header-links">
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
+                <div class="header-text">
+                    <h1>{{ evento.titulo }}</h1>
+                    <div class="event-meta-grid">
+                        <div class="meta-item">
+                            <i class="far fa-clock"></i>
+                            <span>{{ evento.data|time:"H:i" }}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Campus do IPM</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-users"></i>
+                            <span>{{ evento.vagas }} Vagas Disponíveis</span>
+                        </div>
+                    </div>
                 </div>
+            </header>
+
+            <div class="event-description">
+                <h3>Resumo do Evento</h3>
+                <p>{{ evento.descricao|linebreaks }}</p>
+                
+                {% if not evento.exclusivo_alunos %}
+                    <div class="alert alert-info" style="background: rgba(0, 51, 102, 0.05); padding: 1rem; border-radius: 10px; border-left: 4px solid var(--uan-blue); margin-top: 2rem;">
+                        <i class="fas fa-info-circle"></i> Este evento é aberto ao público externo.
+                    </div>
+                {% endif %}
             </div>
         </div>
 
-        <div class="container header-main">
-            <a href="{% url 'pages:index' %}" class="logo">
-                <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
-                    onerror="this.src='https://via.placeholder.com/60?text=IPM'">
-                <div class="logo-text">
-                    <span class="logo-title">INSTITUTO POLITÉCNICO</span>
-                    <span class="logo-subtitle">DO MAYOMBE</span>
-                </div>
-            </a>
-            
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="{% url 'pages:index' %}">Início</a></li>
-                    <li><a href="{% url 'pages:index' %}#sobre">Sobre o IPM</a></li>
-                    <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
-                    <li><a href="{% url 'pages:index' %}#cursos">Cursos</a></li>
-                    <li><a href="{% url 'pages:eventos' %}">Eventos</a></li>
-                    <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
-                </ul>
-            </nav>
-            
-            <!-- Botões de Autenticação -->
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-left: 0.75rem;">
+        <aside class="event-sidebar">
+            <div class="registration-card">
+                <h3>Inscrição</h3>
                 {% if user.is_authenticated %}
-                    <div style="position: relative;">
-                        <button id="userMenuBtn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(0, 51, 102, 0.05); border: 2px solid var(--uan-blue); border-radius: 50px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.1)'" onmouseout="this.style.background='rgba(0, 51, 102, 0.05)'">
-                            {% if user.aluno and user.aluno.foto %}
-                                <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--uan-blue);">
-                            {% else %}
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--uan-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;">
-                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                </div>
-                            {% endif %}
-                            <span style="color: var(--uan-blue); font-weight: 600; font-size: 0.85rem;">
-                                {{ user.first_name|default:user.username }}
-                            </span>
-                            <i class="fas fa-chevron-down" style="color: var(--uan-blue); font-size: 0.7rem;"></i>
+                    <form method="post" action="{% url 'pages:evento_detail' evento.id %}">
+                        {% csrf_token %}
+                        <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                            Olá <strong>{{ user.first_name }}</strong>, as inscrições para alunos são automáticas após clicar no botão abaixo.
+                        </p>
+                        <button type="submit" class="btn-register-event" style="width: 100%;">
+                            <i class="fas fa-calendar-plus"></i> Confirmar Inscrição
                         </button>
-                        
-                        <div id="userDropdown" style="display: none; position: absolute; top: 110%; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-width: 250px; overflow: hidden; z-index: 2000;">
-                            <div style="padding: 1.2rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; text-align: center;">
-                                {% if user.aluno and user.aluno.foto %}
-                                    <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 0.5rem;">
-                                {% else %}
-                                    <div style="width: 70px; height: 70px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; color: var(--uan-blue); font-weight: 700; font-size: 1.8rem; margin: 0 auto 0.5rem; border: 3px solid white;">
-                                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                    </div>
-                                {% endif %}
-                                <h4 style="margin: 0; font-size: 1rem;">{{ user.get_full_name }}</h4>
-                                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; opacity: 0.9;">{{ user.email }}</p>
-                                {% if user.aluno %}
-                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.75rem; opacity: 0.8;">{{ user.aluno.numero_estudante }}</p>
-                                {% endif %}
-                            </div>
-                            
-                            <div style="padding: 0.5rem 0;">
-                                <a href="{% url 'pages:perfil' %}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-user" style="color: var(--uan-blue); width: 20px;"></i>
-                                    <span style="font-size: 0.9rem;">Meu Perfil</span>
-                                </a>
-                                <a href="{% url 'pages:minhas_inscricoes' %}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-calendar-check" style="color: var(--uan-blue); width: 20px;"></i>
-                                    <span style="font-size: 0.9rem;">Minhas Inscrições</span>
-                                </a>
-                                <div style="height: 1px; background: #e0e0e0; margin: 0.5rem 0;"></div>
-                                <form method="post" action="{% url 'pages:logout' %}" style="margin: 0;">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('Tem certeza que deseja sair da sua conta?');" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--uan-red); text-decoration: none; transition: all 0.3s ease; background: transparent; border: none; cursor: pointer; text-align: left;" onmouseover="this.style.background='rgba(204, 0, 0, 0.05)'" onmouseout="this.style.background='transparent'">
-                                        <i class="fas fa-sign-out-alt" style="width: 20px;"></i>
-                                        <span style="font-size: 0.9rem; font-weight: 600;">Sair</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
                 {% else %}
-                    <a href="{% url 'pages:login' %}" style="padding: 0.4rem 0.9rem; background: transparent; color: var(--uan-blue); border: 2px solid var(--uan-blue); border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-blue)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--uan-blue)'">
-                        <i class="fas fa-sign-in-alt"></i> Entrar
-                    </a>
-                    <a href="{% url 'pages:registro' %}" style="padding: 0.4rem 0.9rem; background: var(--uan-blue); color: white; border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
-                        <i class="fas fa-user-plus"></i> Criar Conta
-                    </a>
-                {% endif %}
-            </div>
-            
-            <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </header>
-
-    <main class="container" style="margin-top: 2rem; margin-bottom: 4rem;">
-        <!-- Breadcrumb -->
-        <nav style="margin-bottom: 2rem; font-size: 0.9rem; color: var(--text-muted);">
-            <a href="{% url 'pages:index' %}" style="color: var(--uan-blue); text-decoration: none;">Início</a>
-            <i class="fas fa-chevron-right" style="margin: 0 0.5rem; font-size: 0.7rem;"></i>
-            <a href="{% url 'pages:eventos' %}" style="color: var(--uan-blue); text-decoration: none;">Eventos</a>
-            <i class="fas fa-chevron-right" style="margin: 0 0.5rem; font-size: 0.7rem;"></i>
-            <span>{{ evento.titulo }}</span>
-        </nav>
-
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem;">
-            <!-- Event Details -->
-            <article style="background: white; border-radius: 12px; padding: 2.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                <!-- Event Header -->
-                <div style="margin-bottom: 2rem;">
-                    <h1 style="font-size: 2.5rem; font-weight: 700; color: var(--uan-blue); margin-bottom: 1rem; line-height: 1.2;">
-                        {{ evento.titulo }}
-                    </h1>
-                    
-                    <!-- Event Meta -->
-                    <div style="display: flex; flex-wrap: wrap; gap: 2rem; padding: 1.5rem; background: linear-gradient(135deg, rgba(0, 51, 102, 0.05), rgba(0, 136, 204, 0.05)); border-radius: 8px; margin-bottom: 2rem;">
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--uan-blue); display: flex; align-items: center; justify-content: center; color: white;">
-                                <i class="fas fa-calendar-day" style="font-size: 1.3rem;"></i>
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Data</p>
-                                <p style="margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--uan-blue);">{{ evento.data|date:"d/m/Y" }}</p>
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 0.75rem;">
-                            <div style="width: 50px; height: 50px; border-radius: 50%; background: {% if evento.vagas_disponiveis > 0 %}#28a745{% else %}#dc3545{% endif %}; display: flex; align-items: center; justify-content: center; color: white;">
-                                <i class="fas fa-users" style="font-size: 1.3rem;"></i>
-                            </div>
-                            <div>
-                                <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600;">Vagas</p>
-                                <p style="margin: 0; font-size: 1.1rem; font-weight: 700; color: {% if evento.vagas_disponiveis > 0 %}#28a745{% else %}#dc3545{% endif %};">
-                                    {{ evento.vagas_disponiveis }} / {{ evento.vagas }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Event Description -->
-                <div style="font-size: 1.05rem; line-height: 1.8; color: var(--text-main); margin-bottom: 2rem;">
-                    {{ evento.descricao|linebreaks }}
-                </div>
-                
-                <!-- Location (if exists) -->
-                {% if evento.local %}
-                <div style="padding: 1.5rem; background: #f8f9fa; border-left: 4px solid var(--uan-blue); border-radius: 4px; margin-bottom: 2rem;">
-                    <p style="margin: 0; display: flex; align-items: center; gap: 0.75rem; font-size: 1.05rem;">
-                        <i class="fas fa-map-marker-alt" style="color: var(--uan-blue); font-size: 1.2rem;"></i>
-                        <strong>Local:</strong> {{ evento.local }}
+                    <p style="margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-muted);">
+                        Para se inscrever, por favor faça login ou cadastre-se.
                     </p>
-                </div>
+                    <div style="display: flex; flex-direction: column; gap: 1rem;">
+                        <a href="{% url 'pages:login' %}" class="btn-login-event">Entrar</a>
+                        <a href="{% url 'pages:registro' %}" class="btn-register-event">Criar Conta</a>
+                    </div>
                 {% endif %}
-            </article>
-
-            <!-- Sidebar -->
-            <aside>
-                <!-- Registration Card -->
-                <div style="background: white; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 2rem;">
-                    <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--uan-blue); margin-bottom: 1.5rem; text-align: center;">
-                        <i class="fas fa-ticket-alt"></i> Inscrição
-                    </h3>
-                    
-                    {% if user.is_authenticated %}
-                        {% if user.aluno %}
-                            {% if ja_inscrito %}
-                                <div style="padding: 1.5rem; background: linear-gradient(135deg, #28a745, #20c997); border-radius: 8px; text-align: center; color: white; margin-bottom: 1rem;">
-                                    <i class="fas fa-check-circle" style="font-size: 3rem; margin-bottom: 0.5rem;"></i>
-                                    <p style="margin: 0; font-size: 1.1rem; font-weight: 600;">Você já está inscrito!</p>
-                                </div>
-                                <form method="post" action="{% url 'pages:cancelar_inscricao' evento.id %}">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('Tem certeza que deseja cancelar sua inscrição?');" style="width: 100%; padding: 1rem; background: #dc3545; color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">
-                                        <i class="fas fa-times-circle"></i> Cancelar Inscrição
-                                    </button>
-                                </form>
-                            {% else %}
-                                {% if evento.vagas_disponiveis > 0 %}
-                                    <div style="padding: 1rem; background: #e7f3ff; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
-                                        <p style="margin: 0; color: var(--uan-blue); font-weight: 600;">
-                                            <i class="fas fa-info-circle"></i> {{ evento.vagas_disponiveis }} vaga(s) disponível(is)
-                                        </p>
-                                    </div>
-                                    <form method="post" action="{% url 'pages:inscrever_evento' evento.id %}">
-                                        {% csrf_token %}
-                                        <button type="submit" style="width: 100%; padding: 1.2rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(0, 51, 102, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 51, 102, 0.3)'">
-                                            <i class="fas fa-check-circle"></i> Inscrever-me Agora
-                                        </button>
-                                    </form>
-                                {% else %}
-                                    <div style="padding: 1.5rem; background: #f8d7da; border-radius: 8px; text-align: center; color: #721c24;">
-                                        <i class="fas fa-exclamation-triangle" style="font-size: 2.5rem; margin-bottom: 0.5rem;"></i>
-                                        <p style="margin: 0; font-weight: 600;">Vagas Esgotadas</p>
-                                    </div>
-                                {% endif %}
-                            {% endif %}
-                        {% else %}
-                            <!-- Logged in as Admin/Staff without Aluno profile -->
-                            {% if not evento.exclusivo_alunos %}
-                                <div style="padding: 1rem; background: #f8f9fa; border: 1px solid #eee; border-radius: 8px; margin-bottom: 1.5rem;">
-                                    <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted); text-align: center;">
-                                        Inscrição pública habilitada para esta conta.
-                                    </p>
-                                </div>
-                                <form method="post" action="{% url 'pages:inscrever_evento' evento.id %}">
-                                    {% csrf_token %}
-                                    <div style="margin-bottom: 0.8rem;">
-                                        <input type="text" name="nome" placeholder="Nome Completo" required style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
-                                    </div>
-                                    <div style="margin-bottom: 0.8rem;">
-                                        <input type="email" name="email" placeholder="Seu melhor Email" required style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
-                                    </div>
-                                    <div style="margin-bottom: 1rem;">
-                                        <input type="text" name="telefone" placeholder="Telefone (Opcional)" style="width: 100%; padding: 0.7rem; border: 1px solid #ddd; border-radius: 6px; font-size: 0.9rem;">
-                                    </div>
-                                    <button type="submit" style="width: 100%; padding: 1rem; background: var(--uan-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
-                                        <i class="fas fa-paper-plane"></i> Confirmar Inscrição
-                                    </button>
-                                </form>
-                            {% else %}
-                                <div style="padding: 1.5rem; background: #f8f9fa; border: 1px dashed #dee2e6; border-radius: 8px; text-align: center;">
-                                    <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--uan-blue); margin-bottom: 1rem; opacity: 0.5;"></i>
-                                    <p style="margin: 0 0 1rem 0; color: var(--text-muted); font-size: 0.95rem;">
-                                        <strong>Evento exclusivo para Alunos</strong><br>
-                                        Esta conta não possui um perfil de estudante vinculado.
-                                    </p>
-                                    <a href="{% url 'pages:registro' %}" style="color: var(--uan-blue); font-weight: 600; text-decoration: underline;">Criar conta de estudante</a>
-                                </div>
-                            {% endif %}
-                        {% endif %}
-                    {% else %}
-                        <!-- Not Logged In -->
-                        {% if not evento.exclusivo_alunos %}
-                            <div style="padding: 1rem; background: #e7f3ff; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
-                                <p style="margin: 0; color: var(--uan-blue); font-weight: 600; font-size: 0.9rem;">
-                                    <i class="fas fa-globe"></i> Inscrição Aberta ao Público
-                                </p>
-                            </div>
-                            <form method="post" action="{% url 'pages:inscrever_evento' evento.id %}">
-                                {% csrf_token %}
-                                <div style="margin-bottom: 0.8rem;">
-                                    <input type="text" name="nome" placeholder="Seu Nome Completo" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                                </div>
-                                <div style="margin-bottom: 0.8rem;">
-                                    <input type="email" name="email" placeholder="Seu Endereço de Email" required style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                                </div>
-                                <div style="margin-bottom: 1.2rem;">
-                                    <input type="text" name="telefone" placeholder="Telefone de Contacto" style="width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px; font-size: 0.9rem;">
-                                </div>
-                                <button type="submit" style="width: 100%; padding: 1.1rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                    <i class="fas fa-check-circle"></i> Garantir minha Vaga
-                                </button>
-                                <p style="margin-top: 1rem; text-align: center; font-size: 0.8rem; color: var(--text-muted);">
-                                    Já é aluno? <a href="{% url 'pages:login' %}?next={{ request.path }}" style="color: var(--uan-blue); font-weight: 600;">Faça login aqui</a>
-                                </p>
-                            </form>
-                        {% else %}
-                            <div style="padding: 1.5rem; background: #fff3cd; border-radius: 8px; text-align: center; margin-bottom: 1rem;">
-                                <i class="fas fa-lock" style="font-size: 2.5rem; color: #856404; margin-bottom: 0.5rem;"></i>
-                                <p style="margin: 0 0 1rem 0; color: #856404; font-weight: 600;">Evento reservado para Alunos</p>
-                            </div>
-                            <a href="{% url 'pages:login' %}?next={{ request.path }}" style="display: block; width: 100%; padding: 1rem; background: var(--uan-blue); color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
-                                <i class="fas fa-sign-in-alt"></i> Fazer Login
-                            </a>
-                        {% endif %}
-                    {% endif %}
-                </div>
-
-                <!-- Back Button -->
-                <a href="{% url 'pages:eventos' %}" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 1rem; background: #6c757d; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
-                    <i class="fas fa-arrow-left"></i>
-                    Voltar para Eventos
-                </a>
-            </aside>
-        </div>
-    </main>
-
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-bottom" style="text-align: center; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1);">
-                <p style="color: rgba(255,255,255,0.8);">&copy; 2025 Instituto Politécnico do Mayombe. Todos os direitos reservados.</p>
             </div>
-        </div>
-    </footer>
+        </aside>
+    </div>
+</main>
 
-    <script src="{% static 'js/mobile-menu.js' %}"></script>
-    <script>
-        // User Dropdown Toggle
-        const userMenuBtn = document.getElementById('userMenuBtn');
-        const userDropdown = document.getElementById('userDropdown');
-        
-        if (userMenuBtn && userDropdown) {
-            userMenuBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
-            });
-            
-            document.addEventListener('click', function(e) {
-                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
-                    userDropdown.style.display = 'none';
-                }
-            });
+<style>
+    .event-detail-wrapper {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 3rem;
+        margin-bottom: 5rem;
+    }
+    .event-main-content {
+        background: var(--bg-main);
+        padding: 3rem;
+        border-radius: 20px;
+        box-shadow: var(--shadow-sm);
+    }
+    .event-header-info {
+        display: flex;
+        gap: 2rem;
+        margin-bottom: 3rem;
+        align-items: center;
+    }
+    .event-date-large {
+        background: var(--uan-blue);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        min-width: 120px;
+        display: flex;
+        flex-direction: column;
+        line-height: 1;
+    }
+    .event-date-large .day {
+        font-size: 2.5rem;
+        font-weight: 800;
+        margin-bottom: 0.5rem;
+    }
+    .event-date-large .month {
+        font-size: 1rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        opacity: 0.9;
+    }
+    .header-text h1 {
+        font-size: 2.2rem;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+    .event-meta-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .meta-item i {
+        color: var(--uan-blue);
+    }
+    .event-description h3 {
+        margin-bottom: 1.5rem;
+        color: var(--uan-blue);
+        font-size: 1.5rem;
+    }
+    .event-description p {
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: var(--text-main);
+    }
+    .event-sidebar {
+        position: sticky;
+        top: 130px;
+        height: fit-content;
+    }
+    .registration-card {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        border: 1px solid var(--border-color);
+    }
+    .registration-card h3 {
+        margin-bottom: 1.25rem;
+        font-size: 1.3rem;
+        text-align: center;
+    }
+    .btn-register-event {
+        background: var(--uan-blue);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    .btn-register-event:hover {
+        background: var(--uan-light-blue);
+        transform: translateY(-2px);
+    }
+    .btn-login-event {
+        background: transparent;
+        color: var(--uan-blue);
+        border: 2px solid var(--uan-blue);
+        padding: 1rem;
+        border-radius: 10px;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .btn-login-event:hover {
+        background: rgba(0, 51, 102, 0.05);
+    }
+
+    @media (max-width: 992px) {
+        .event-detail-wrapper {
+            grid-template-columns: 1fr;
         }
-    </script>
-</body>
-
-</html>
+        .event-sidebar {
+            position: relative;
+            top: 0;
+        }
+    }
+    @media (max-width: 768px) {
+        .event-main-content {
+            padding: 1.5rem;
+        }
+        .event-header-info {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+        .header-text h1 {
+            font-size: 1.8rem;
+        }
+        .event-meta-grid {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}

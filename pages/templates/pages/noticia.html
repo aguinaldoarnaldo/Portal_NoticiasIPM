@@ -1,224 +1,102 @@
+{% extends 'pages/index.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="pt-br">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notícias | IPM NEWS</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
-    <link rel="stylesheet" href="{% static 'css/animations.css' %}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <script src="{% static 'js/theme-manager.js' %}"></script>
-</head>
+{% block title %}Notícias | IPM NEWS{% endblock %}
 
-<body>
+{% block content %}
+<style>
+    .news-banner {
+        position: relative;
+        height: 45vh;
+        min-height: 300px;
+        max-height: 450px;
+        background-color: var(--uan-blue);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 3rem;
+    }
 
-    <header class="main-header">
-        <!-- University Top Bar -->
-        <div class="header-top-bar">
-            <div class="container header-top-inner">
-                <div class="header-contact">
-                    <span><i class="fas fa-envelope"></i> secretaria@ipm.edu.ao</span>
-                    <span><i class="fas fa-phone"></i> +244 923 456 789</span>
-                </div>
-                <div class="header-links">
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
-                    <a href="#" style="margin-left: 1rem;"><i class="fas fa-chalkboard-teacher"></i> Portal do Docente</a>
-                </div>
-            </div>
-        </div>
+    .news-banner img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: center 30%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        filter: none;
+    }
 
-        <div class="container header-main">
-            <a href="{% url 'pages:index' %}" class="logo">
-                <img src="{% static 'images/logo_ipm2.png' %}" alt="IPM Logo"
-                    onerror="this.src='https://via.placeholder.com/60?text=IPM'">
-                <div class="logo-text">
-                    <span class="logo-title">INSTITUTO POLITÉCNICO</span>
-                    <span class="logo-subtitle">DO MAYOMBE</span>
-                </div>
-            </a>
-            
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="{% url 'pages:index' %}">Início</a></li>
-                    <li><a href="{% url 'pages:index' %}#sobre">Sobre o IPM</a></li>
-                    <li><a href="{% url 'pages:notice' %}" class="active">Notícias</a></li>
-                    <li><a href="{% url 'pages:index' %}#cursos">Cursos</a></li>
-                    <li><a href="{% url 'pages:eventos' %}">Eventos</a></li>
-                    <li><a href="{% url 'pages:index' %}#contactos">Contactos</a></li>
-                </ul>
-            </nav>
-            
-            <!-- Botões de Autenticação -->
-            <div style="display: flex; align-items: center; gap: 0.6rem; margin-left: 0.75rem;">
-                {% if user.is_authenticated %}
-                    <!-- User Profile Dropdown -->
-                    <div style="position: relative;">
-                        <button id="userMenuBtn" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.8rem; background: rgba(0, 51, 102, 0.05); border: 2px solid var(--uan-blue); border-radius: 50px; cursor: pointer; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.1)'" onmouseout="this.style.background='rgba(0, 51, 102, 0.05)'">
-                            {% if user.aluno.foto %}
-                                <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--uan-blue);">
-                            {% else %}
-                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--uan-blue); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.9rem;">
-                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                </div>
-                            {% endif %}
-                            <span style="color: var(--uan-blue); font-weight: 600; font-size: 0.85rem;">
-                                {{ user.first_name|default:user.username }}
-                            </span>
-                            <i class="fas fa-chevron-down" style="color: var(--uan-blue); font-size: 0.7rem;"></i>
-                        </button>
-                        
-                        <!-- Dropdown Menu -->
-                        <div id="userDropdown" style="display: none; position: absolute; top: 110%; right: 0; background: white; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); min-width: 250px; overflow: hidden; z-index: 2000;">
-                            <!-- User Info Header -->
-                            <div style="padding: 1.2rem; background: linear-gradient(135deg, var(--uan-blue), var(--uan-light-blue)); color: white; text-align: center;">
-                                {% if user.aluno.foto %}
-                                    <img src="{{ user.aluno.foto.url }}" alt="{{ user.get_full_name }}" style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid white; margin-bottom: 0.5rem;">
-                                {% else %}
-                                    <div style="width: 70px; height: 70px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; color: var(--uan-blue); font-weight: 700; font-size: 1.8rem; margin: 0 auto 0.5rem; border: 3px solid white;">
-                                        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
-                                    </div>
-                                {% endif %}
-                                <h4 style="margin: 0; font-size: 1rem;">{{ user.get_full_name }}</h4>
-                                <p style="margin: 0.3rem 0 0 0; font-size: 0.8rem; opacity: 0.9;">{{ user.email }}</p>
-                                {% if user.aluno %}
-                                    <p style="margin: 0.2rem 0 0 0; font-size: 0.75rem; opacity: 0.8;">{{ user.aluno.numero_estudante }}</p>
-                                {% endif %}
-                            </div>
-                            
-                            <!-- Menu Items -->
-                            <div style="padding: 0.5rem 0;">
-                                <a href="{% url 'pages:perfil' %}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-user" style="color: var(--uan-blue); width: 20px;"></i>
-                                    <span style="font-size: 0.9rem;">Meu Perfil</span>
-                                </a>
-                                <a href="{% url 'pages:minhas_inscricoes' %}" style="display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--text-main); text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='rgba(0, 51, 102, 0.05)'" onmouseout="this.style.background='transparent'">
-                                    <i class="fas fa-calendar-check" style="color: var(--uan-blue); width: 20px;"></i>
-                                    <span style="font-size: 0.9rem;">Minhas Inscrições</span>
-                                </a>
-                                <div style="height: 1px; background: #e0e0e0; margin: 0.5rem 0;"></div>
-                                <form method="post" action="{% url 'pages:logout' %}" style="margin: 0;">
-                                    {% csrf_token %}
-                                    <button type="submit" onclick="return confirm('Tem certeza que deseja sair da sua conta?');" style="width: 100%; display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 1.2rem; color: var(--uan-red); text-decoration: none; transition: all 0.3s ease; background: transparent; border: none; cursor: pointer; text-align: left;" onmouseover="this.style.background='rgba(204, 0, 0, 0.05)'" onmouseout="this.style.background='transparent'">
-                                        <i class="fas fa-sign-out-alt" style="width: 20px;"></i>
-                                        <span style="font-size: 0.9rem; font-weight: 600;">Sair</span>
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                {% else %}
-                    <a href="{% url 'pages:login' %}" style="padding: 0.4rem 0.9rem; background: transparent; color: var(--uan-blue); border: 2px solid var(--uan-blue); border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-blue)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--uan-blue)'">
-                        <i class="fas fa-sign-in-alt"></i> Entrar
-                    </a>
-                    <a href="{% url 'pages:registro' %}" style="padding: 0.4rem 0.9rem; background: var(--uan-blue); color: white; border-radius: 6px; font-weight: 600; font-size: 0.8rem; text-decoration: none; transition: all 0.3s ease;" onmouseover="this.style.background='var(--uan-light-blue)'" onmouseout="this.style.background='var(--uan-blue)'">
-                        <i class="fas fa-user-plus"></i> Criar Conta
-                    </a>
-                {% endif %}
-            </div>
-            
-            <button class="menu-toggle" id="mobile-menu-btn" aria-label="Abrir Menu">
-                <i class="fas fa-bars"></i>
-            </button>
-        </div>
-    </header>
+    .news-banner-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 51, 102, 0.4));
+        z-index: 2;
+    }
 
-    <main class="container" style="margin-top: 4rem;">
-    <style>
+    .news-banner-content {
+        position: relative;
+        z-index: 3;
+        text-align: center;
+        color: white;
+        max-width: 800px;
+        padding: 0 2rem;
+    }
+
+    .news-banner-content h1 {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 800;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: -1px;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.4);
+    }
+
+    .news-banner-content p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        line-height: 1.5;
+        text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    }
+    
+    @media (max-width: 768px) {
         .news-banner {
-            position: relative;
-            height: 45vh; /* Different from home (which is 75vh) */
-            min-height: 300px;
-            max-height: 450px;
-            background-color: var(--uan-blue);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 3rem;
+            height: 35vh;
+            margin-bottom: 2rem;
         }
+    }
 
-        .news-banner img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center 30%;
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 1;
-            filter: none;
-        }
+    .filter-btn {
+        padding: 0.6rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        border: 2px solid var(--uan-blue);
+        color: var(--uan-blue);
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+    .filter-btn:hover {
+        background: rgba(0, 51, 102, 0.1);
+    }
+    .filter-btn.active {
+        background: var(--uan-blue);
+        color: white;
+    }
+</style>
 
-        .news-banner-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 51, 102, 0.4));
-            z-index: 2;
-        }
+<section class="news-banner">
+    <img src="{% if noticias.0.imagem %}{{ noticias.0.imagem.url }}{% else %}{% static 'images/hero-fallback.jpg' %}{% endif %}" alt="IPM NEWS">
+    <div class="news-banner-overlay"></div>
+    <div class="news-banner-content">
+        <h1>{% if categoria_ativa %}{{ categoria_ativa }}{% else %}IPM NEWS{% endif %}</h1>
+        <p>Fique por dentro das principais atualizações acadêmicas, eventos e conquistas do Instituto Politécnico do Mayombe.</p>
+    </div>
+</section>
 
-        .news-banner-content {
-            position: relative;
-            z-index: 3;
-            text-align: center;
-            color: white;
-            max-width: 800px;
-            padding: 0 2rem;
-        }
-
-        .news-banner-content h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 1rem;
-            text-transform: uppercase;
-            letter-spacing: -1px;
-            text-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-
-        .news-banner-content p {
-            font-size: 1.2rem;
-            opacity: 0.9;
-            line-height: 1.5;
-            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .news-banner {
-                height: 35vh;
-                margin-bottom: 2rem;
-            }
-        }
-    </style>
-
-    <section class="news-banner">
-        <img src="{% if noticias.0.imagem %}{{ noticias.0.imagem.url }}{% else %}{% static 'images/hero-fallback.jpg' %}{% endif %}" alt="IPM NEWS">
-        <div class="news-banner-overlay"></div>
-        <div class="news-banner-content">
-            <h1>{% if categoria_ativa %}{{ categoria_ativa }}{% else %}IPM NEWS{% endif %}</h1>
-            <p>Fique por dentro das principais atualizações acadêmicas, eventos e conquistas do Instituto Politécnico do Mayombe.</p>
-        </div>
-    </section>
-
-    <style>
-        .filter-btn {
-            padding: 0.6rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 600;
-            border: 2px solid var(--uan-blue);
-            color: var(--uan-blue);
-            text-decoration: none;
-            transition: all 0.3s ease;
-        }
-        .filter-btn:hover {
-            background: rgba(0, 51, 102, 0.1);
-        }
-        .filter-btn.active {
-            background: var(--uan-blue);
-            color: white;
-        }
-    </style>
+<main class="container" style="margin-top: 2rem;">
     <section class="category-filter-bar" style="margin-bottom: 3rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem;">
         <a href="{% url 'pages:notice' %}" class="filter-btn {% if not categoria_ativa %}active{% endif %}">
             Tudo
@@ -230,155 +108,50 @@
         {% endfor %}
     </section>
 
-        <div class="main-wrapper" style="grid-template-columns: 1fr;">
-            <section class="news-feed">
-                <div class="highlight-cards" style="grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));">
-                    {% for noticia in noticias %}
-                    <article class="card news-card">
-                        <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
-                             alt="{{ noticia.titulo }}" class="news-card-bg"
-                             onerror="this.src='https://via.placeholder.com/400x300?text=Alpha+News'">
-                        <div class="news-card-overlay">
-                            <div class="news-card-content">
-                                <h3 class="news-title">{{ noticia.titulo }}</h3>
-                                <p class="news-subtitle">
-                                    {% if noticia.subtitulo %}
-                                        ({{ noticia.subtitulo }})
-                                    {% else %}
-                                        {{ noticia.categoria.categoria }}
-                                    {% endif %}
-                                </p>
-                                <a href="{% url 'pages:noticia_detail' noticia.id %}" class="btn-saber-mais">SABER MAIS</a>
-                            </div>
-                        </div>
-                    </article>
-                    {% empty %}
-                    <p style="grid-column: 1/-1; text-align: center; padding: 4rem; color: var(--text-muted);">Nenhuma
-                        notícia encontrada nesta categoria.</p>
-                    {% endfor %}
-                </div>
-
-                <!-- Pagination -->
-                {% if is_paginated %}
-                <nav style="display: flex; justify-content: center; margin-top: 4rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem; background: white; padding: 0.5rem; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-                        <!-- Previous Button -->
-                        {% if page_obj.has_previous %}
-                            <a href="?page={{ page_obj.previous_page_number }}{% if categoria_ativa %}&categoria={{ categoria_ativa }}{% endif %}" 
-                               style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--uan-blue); color: white; text-decoration: none; transition: all 0.3s ease;" 
-                               onmouseover="this.style.background='var(--uan-light-blue)'" 
-                               onmouseout="this.style.background='var(--uan-blue)'">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
+    <div class="main-wrapper" style="grid-template-columns: 1fr;">
+        <section class="news-feed">
+            <div class="highlight-cards" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+                {% for noticia in noticias %}
+                <article class="card news-card" onclick="window.location.href='{% url 'pages:noticia_detail' noticia.id %}'">
+                    <img src="{% if noticia.imagem %}{{ noticia.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
+                         alt="{{ noticia.titulo }}" class="news-card-bg"
+                         onerror="this.src='https://via.placeholder.com/400x300?text=Alpha+News'">
+                    <div class="news-card-overlay">
+                        <h3 class="news-title">{{ noticia.titulo }}</h3>
+                        {% if noticia.subtitulo %}
+                            <p class="news-subtitle">({{ noticia.subtitulo }})</p>
                         {% else %}
-                            <span style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #999; cursor: not-allowed;">
-                                <i class="fas fa-chevron-left"></i>
-                            </span>
+                            <p class="news-subtitle">{{ noticia.categoria.categoria }}</p>
                         {% endif %}
-                        
-                        <!-- Page Numbers -->
-                        {% for num in page_obj.paginator.page_range %}
-                            {% if page_obj.number == num %}
-                                <span style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--uan-blue); color: white; font-weight: 700; font-size: 0.95rem;">
-                                    {{ num }}
-                                </span>
-                            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                                <a href="?page={{ num }}{% if categoria_ativa %}&categoria={{ categoria_ativa }}{% endif %}" 
-                                   style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: transparent; color: var(--uan-blue); text-decoration: none; font-weight: 600; font-size: 0.95rem; transition: all 0.3s ease;" 
-                                   onmouseover="this.style.background='rgba(0, 51, 102, 0.1)'" 
-                                   onmouseout="this.style.background='transparent'">
-                                    {{ num }}
-                                </a>
-                            {% endif %}
-                        {% endfor %}
-                        
-                        <!-- Next Button -->
-                        {% if page_obj.has_next %}
-                            <a href="?page={{ page_obj.next_page_number }}{% if categoria_ativa %}&categoria={{ categoria_ativa }}{% endif %}" 
-                               style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: var(--uan-blue); color: white; text-decoration: none; transition: all 0.3s ease;" 
-                               onmouseover="this.style.background='var(--uan-light-blue)'" 
-                               onmouseout="this.style.background='var(--uan-blue)'">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        {% else %}
-                            <span style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: #e0e0e0; color: #999; cursor: not-allowed;">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                        {% endif %}
+                        <button class="btn-saber-mais">
+                            SABER MAIS <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                        </button>
                     </div>
-                </nav>
-                
-                <!-- Page Info -->
-                <div style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.9rem;">
-                    Mostrando página <strong>{{ page_obj.number }}</strong> de <strong>{{ page_obj.paginator.num_pages }}</strong>
-                    ({{ page_obj.paginator.count }} notícias no total)
-                </div>
+                </article>
+                {% empty %}
+                <p>Nenhuma notícia encontrada nesta categoria.</p>
+                {% endfor %}
+            </div>
+
+            <!-- PAGINAÇÃO -->
+            {% if is_paginated %}
+            <nav class="pagination-container" style="display: flex; justify-content: center; margin-top: 4rem; gap: 0.5rem;">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1" class="filter-btn" title="Primeira"><i class="fas fa-angle-double-left"></i></a>
+                    <a href="?page={{ page_obj.previous_page_number }}" class="filter-btn"><i class="fas fa-angle-left"></i> Anterior</a>
                 {% endif %}
-            </section>
-        </div>
-    </main>
 
-    <footer class="main-footer">
-        <div class="container">
-            <div class="footer-grid">
-                <div class="footer-info">
-                    <h4>IPM</h4>
-                    <p>Formando líderes através da educação e informação.</p>
-                </div>
-                <nav class="footer-nav">
-                    <h4>EXPLORAR</h4>
-                    <ul>
-                        <li><a href="{% url 'pages:index' %}">Início</a></li>
-                        <li><a href="{% url 'pages:notice' %}">Notícias</a></li>
-                    </ul>
-                </nav>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2025 Jornal IPM. Design Premium.</p>
-            </div>
-        </div>
-    </footer>
+                <span class="filter-btn active" style="cursor: default;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
 
-    <script src="{% static 'js/mobile-menu.js' %}"></script>
-    <script>
-        // Card animations
-        document.querySelectorAll('.card').forEach((card, index) => {
-            card.style.setProperty('--card-index', index);
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(30px)';
-            card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        });
-
-        // User Dropdown Toggle
-        const userMenuBtn = document.getElementById('userMenuBtn');
-        const userDropdown = document.getElementById('userDropdown');
-        
-        if (userMenuBtn && userDropdown) {
-            userMenuBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                userDropdown.style.display = userDropdown.style.display === 'none' ? 'block' : 'none';
-            });
-            
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
-                    userDropdown.style.display = 'none';
-                }
-            });
-        }
-
-        // Fade in animation
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.card').forEach(el => observer.observe(el));
-    </script>
-</body>
-
-</html>
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="filter-btn">Próxima <i class="fas fa-angle-right"></i></a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}" class="filter-btn" title="Última"><i class="fas fa-angle-double-right"></i></a>
+                {% endif %}
+            </nav>
+            {% endif %}
+        </section>
+    </div>
+</main>
+{% endblock %}
