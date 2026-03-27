@@ -25,8 +25,9 @@
                     <span><i class="fas fa-phone"></i> +244 923 456 789</span>
                 </div>
                 <div class="header-links">
-                    <a href="#" class="portal-link"><i class="fas fa-user-graduate"></i> Portal do Estudante</a>
-                    <a href="#" class="portal-link"><i class="fas fa-user-friends"></i> Portal do Encarregado</a>
+                    <a href="https://candidatura.ipm.edu.ao" class="btn-portal-candidatura" target="_blank">
+                        <i class="fas fa-file-signature"></i> Portal de Candidatura
+                    </a>
                 </div>
             </div>
         </div>
@@ -247,9 +248,21 @@
             <aside class="sidebar">
                 <div class="widget events-widget">
                     <h3><i class="fas fa-calendar-check"></i> EVENTOS</h3>
-                    <ul>
+                    <ul class="events-list-compact">
                         {% for evento in eventos %}
-                        <li><span class="date">{{ evento.data|date:"d M" }}</span> {{ evento.titulo }}</li>
+                        <li style="display: flex; gap: 1rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--glass-border);">
+                            {% if evento.imagem %}
+                                <img src="{{ evento.imagem.url }}" alt="{{ evento.titulo }}" style="width: 50px; height: 50px; border-radius: 8px; object-fit: cover;">
+                            {% else %}
+                                <div style="width: 50px; height: 50px; border-radius: 8px; background: rgba(0, 51, 102, 0.1); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-calendar-alt" style="color: var(--uan-blue); font-size: 1.2rem;"></i>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <span class="date" style="display: block; font-size: 0.75rem; color: var(--uan-light-blue); font-weight: 700;">{{ evento.data|date:"d M" }}</span>
+                                <a href="{% url 'pages:evento_detail' evento.id %}" style="font-weight: 600; font-size: 0.9rem; color: var(--text-main);">{{ evento.titulo }}</a>
+                            </div>
+                        </li>
                         {% empty %}
                         <li style="color: var(--text-muted); font-size: 0.9rem;">Nenhum evento próximo.</li>
                         {% endfor %}
@@ -491,41 +504,46 @@
         
         // --- HERO SLIDER (BANNER) ---
         document.addEventListener('DOMContentLoaded', function() {
-            const slides = document.querySelectorAll('.slide');
-            const dots = document.querySelectorAll('.slider-dot');
-            const sliderContainer = document.getElementById('heroSlider');
+            const sliders = ['heroSlider', 'eventSlider'];
             
-            if (slides.length === 0) return;
+            sliders.forEach(sliderId => {
+                const sliderContainer = document.getElementById(sliderId);
+                if (!sliderContainer) return;
 
-            let currentSlide = 0;
-            let slideInterval;
-            const intervalTime = 4000;
+                const slides = sliderContainer.querySelectorAll('.slide');
+                const dots = sliderContainer.querySelectorAll('.slider-dot');
+                
+                if (slides.length === 0) return;
 
-            function activateSlide(index) {
-                if (index < 0) index = slides.length - 1;
-                if (index >= slides.length) index = 0;
-                slides.forEach(s => s.classList.remove('active'));
-                dots.forEach(d => d.classList.remove('active'));
-                slides[index].classList.add('active');
-                if (dots[index]) dots[index].classList.add('active');
-                currentSlide = index;
-            }
+                let currentSlide = 0;
+                let slideInterval;
+                const intervalTime = 4000;
 
-            function nextSlide() { activateSlide(currentSlide + 1); }
-            function startTimer() { slideInterval = setInterval(nextSlide, intervalTime); }
-            function stopTimer() { clearInterval(slideInterval); }
+                function activateSlide(index) {
+                    if (index < 0) index = slides.length - 1;
+                    if (index >= slides.length) index = 0;
+                    slides.forEach(s => s.classList.remove('active'));
+                    dots.forEach(d => d.classList.remove('active'));
+                    slides[index].classList.add('active');
+                    if (dots[index]) dots[index].classList.add('active');
+                    currentSlide = index;
+                }
 
-            dots.forEach(dot => {
-                dot.addEventListener('click', function() {
-                    activateSlide(parseInt(this.getAttribute('data-index')));
+                function nextSlide() { activateSlide(currentSlide + 1); }
+                function startTimer() { slideInterval = setInterval(nextSlide, intervalTime); }
+                function stopTimer() { clearInterval(slideInterval); }
+
+                dots.forEach(dot => {
+                    dot.addEventListener('click', function() {
+                        activateSlide(parseInt(this.getAttribute('data-index')));
+                    });
                 });
-            });
 
-            if (sliderContainer) {
                 sliderContainer.addEventListener('mouseenter', stopTimer);
                 sliderContainer.addEventListener('mouseleave', startTimer);
-            }
-            startTimer();
+                
+                startTimer();
+            });
         });
     </script>
 </body>

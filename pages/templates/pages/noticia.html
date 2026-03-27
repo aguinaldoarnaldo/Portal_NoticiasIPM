@@ -69,21 +69,209 @@
         }
     }
 
-    .filter-btn {
-        padding: 0.6rem 1.5rem;
-        border-radius: 50px;
-        font-weight: 600;
-        border: 2px solid var(--uan-blue);
-        color: var(--uan-blue);
-        text-decoration: none;
-        transition: all 0.3s ease;
+    /* --- IPM PREMIUM FILTERS STYLES --- */
+    .ipm-premium-filter-section {
+        position: relative;
+        max-width: 1240px;
+        margin: 0 auto 3rem;
+        padding: 0 1rem;
+        z-index: 10;
     }
-    .filter-btn:hover {
-        background: rgba(0, 51, 102, 0.1);
+
+    .ipm-premium-filter-controls {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        gap: 1.2rem !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        padding: 1.2rem 2rem !important;
+        border-radius: 20px !important;
+        border: 1px solid rgba(0, 51, 102, 0.1) !important;
+        box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08) !important;
     }
-    .filter-btn.active {
-        background: var(--uan-blue);
-        color: white;
+
+    [data-theme="dark"] .ipm-premium-filter-controls {
+        background: rgba(30, 41, 59, 0.85) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .ipm-premium-search-form {
+        flex: 1 !important;
+        min-width: 300px !important;
+        margin: 0 !important;
+    }
+
+    .ipm-premium-search-wrapper {
+        position: relative !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .ipm-premium-search-icon {
+        position: absolute !important;
+        left: 1.25rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: var(--uan-blue) !important;
+        opacity: 0.6 !important;
+        pointer-events: none !important;
+        z-index: 5 !important;
+    }
+
+    .ipm-premium-search-input {
+        width: 100% !important;
+        padding: 1rem 1rem 1rem 3.5rem !important;
+        border-radius: 14px !important;
+        border: 2px solid transparent !important;
+        background: rgba(0, 51, 102, 0.06) !important;
+        color: var(--text-main) !important;
+        font-size: 1rem !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        outline: none !important;
+        box-shadow: none !important;
+    }
+
+    .ipm-premium-search-input:focus {
+        background: white !important;
+        border-color: var(--uan-blue) !important;
+        box-shadow: 0 0 0 4px rgba(0, 51, 102, 0.1) !important;
+    }
+
+    .ipm-premium-clear-search {
+        position: absolute !important;
+        right: 1.25rem !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        color: var(--text-muted) !important;
+        cursor: pointer !important;
+        padding: 5px !important;
+        z-index: 5 !important;
+    }
+
+    .ipm-premium-dropdowns {
+        display: flex !important;
+        gap: 1rem !important;
+    }
+
+    .ipm-premium-dropdown {
+        position: relative !important;
+        min-width: 200px !important;
+    }
+
+    .ipm-premium-trigger {
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        padding: 0.9rem 1.4rem !important;
+        background: rgba(0, 51, 102, 0.06) !important;
+        border: 2px solid transparent !important;
+        border-radius: 14px !important;
+        color: var(--uan-blue) !important;
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        cursor: pointer !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .ipm-premium-trigger:hover {
+        background: rgba(0, 51, 102, 0.1) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    .ipm-premium-dropdown:hover .ipm-premium-menu {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) !important;
+        display: block !important;
+    }
+
+    .ipm-premium-menu {
+        position: absolute !important;
+        top: calc(100% + 10px) !important;
+        right: 0 !important;
+        min-width: 240px !important;
+        background: white !important;
+        border-radius: 16px !important;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15) !important;
+        padding: 0.6rem !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateY(12px) !important;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1) !important;
+        z-index: 100 !important;
+        border: 1px solid rgba(0, 51, 102, 0.08) !important;
+        display: none;
+    }
+
+    /* Bridge to prevent menu from closing when moving mouse from trigger to dropdown */
+    .ipm-premium-menu::before {
+        content: '';
+        position: absolute;
+        top: -15px;
+        left: 0;
+        right: 0;
+        height: 15px;
+        background: transparent;
+    }
+
+    [data-theme="dark"] .ipm-premium-menu {
+        background: #1e293b !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .ipm-premium-item {
+        display: block !important;
+        padding: 0.85rem 1.25rem !important;
+        border-radius: 12px !important;
+        color: var(--text-main) !important;
+        font-size: 0.95rem !important;
+        font-weight: 600 !important;
+        transition: all 0.3s ease !important;
+        margin-bottom: 2px !important;
+        text-decoration: none !important;
+    }
+
+    .ipm-premium-item:hover {
+        background: rgba(0, 51, 102, 0.06) !important;
+        color: var(--uan-blue) !important;
+        padding-left: 1.5rem !important;
+    }
+
+    .ipm-premium-item.active {
+        background: var(--uan-blue) !important;
+        color: white !important;
+    }
+
+    @media (max-width: 768px) {
+        .ipm-premium-filter-controls {
+            flex-direction: column !important;
+            align-items: stretch !important;
+            padding: 1.5rem !important;
+        }
+        .ipm-premium-search-form {
+            min-width: 100% !important;
+        }
+        .ipm-premium-dropdowns {
+            flex-direction: column !important;
+        }
+        .ipm-premium-dropdown {
+            min-width: 100% !important;
+        }
+        .ipm-premium-menu {
+            position: static !important;
+            width: 100% !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            display: none;
+            transform: none !important;
+            box-shadow: none !important;
+            margin-top: 10px !important;
+        }
     }
 </style>
 
@@ -97,15 +285,53 @@
 </section>
 
 <main class="container" style="margin-top: 2rem;">
-    <section class="category-filter-bar" style="margin-bottom: 3rem; display: flex; justify-content: center; flex-wrap: wrap; gap: 1rem;">
-        <a href="{% url 'pages:notice' %}" class="filter-btn {% if not categoria_ativa %}active{% endif %}">
-            Tudo
-        </a>
-        {% for cat in categorias %}
-        <a href="{% url 'pages:category_news' cat.categoria %}" class="filter-btn {% if categoria_ativa == cat.categoria %}active{% endif %}">
-            {{ cat.categoria }}
-        </a>
-        {% endfor %}
+    <section class="ipm-premium-filter-section">
+        <div class="ipm-premium-filter-controls">
+            <!-- Search Bar -->
+            <form action="{% url 'pages:notice' %}" method="get" class="ipm-premium-search-form">
+                <div class="ipm-premium-search-wrapper">
+                    <i class="fas fa-search ipm-premium-search-icon"></i>
+                    <input type="text" name="q" value="{{ q }}" placeholder="Pesquisar notícias..." class="ipm-premium-search-input">
+                    {% if q %}
+                        <a href="{% url 'pages:notice' %}" class="ipm-premium-clear-search"><i class="fas fa-times"></i></a>
+                    {% endif %}
+                </div>
+                <!-- Hidden inputs to preserve other filters -->
+                {% if categoria_ativa %}<input type="hidden" name="cat" value="{{ categoria_ativa }}">{% endif %}
+                {% if order %}<input type="hidden" name="order" value="{{ order }}">{% endif %}
+            </form>
+
+            <div class="ipm-premium-dropdowns">
+                <!-- Category Dropdown -->
+                <div class="ipm-premium-dropdown">
+                    <button class="ipm-premium-trigger">
+                        <span><i class="fas fa-th-large"></i> {% if categoria_ativa %}{{ categoria_ativa }}{% else %}Categorias{% endif %}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="ipm-premium-menu">
+                        <a href="?{% if q %}q={{ q }}&{% endif %}{% if order %}order={{ order }}{% endif %}" class="ipm-premium-item {% if not categoria_ativa %}active{% endif %}">Todas Categorias</a>
+                        {% for cat in categorias %}
+                            <a href="?cat={{ cat.categoria }}{% if q %}&q={{ q }}{% endif %}{% if order %}&order={{ order }}{% endif %}" 
+                               class="ipm-premium-item {% if categoria_ativa == cat.categoria %}active{% endif %}">
+                               {{ cat.categoria }}
+                            </a>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Sort Dropdown -->
+                <div class="ipm-premium-dropdown">
+                    <button class="ipm-premium-trigger">
+                        <span><i class="fas fa-sort-amount-down"></i> {% if order == 'oldest' %}Mais Antigas{% else %}Mais Recentes{% endif %}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="ipm-premium-menu">
+                        <a href="?order=latest{% if q %}&q={{ q }}{% endif %}{% if categoria_ativa %}&cat={{ categoria_ativa }}{% endif %}" class="ipm-premium-item {% if order != 'oldest' %}active{% endif %}">Mais Recentes</a>
+                        <a href="?order=oldest{% if q %}&q={{ q }}{% endif %}{% if categoria_ativa %}&cat={{ categoria_ativa }}{% endif %}" class="ipm-premium-item {% if order == 'oldest' %}active{% endif %}">Mais Antigas</a>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <div class="main-wrapper" style="grid-template-columns: 1fr;">
@@ -129,7 +355,16 @@
                     </div>
                 </article>
                 {% empty %}
-                <p>Nenhuma notícia encontrada nesta categoria.</p>
+                <div class="empty-state" style="width: 100%; grid-column: 1/-1; text-align: center; padding: 4rem; background: rgba(0,0,0,0.02); border-radius: 16px;">
+                    <i class="far fa-newspaper" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5; color: var(--text-muted);"></i>
+                    {% if q %}
+                        <h3 style="color: var(--text-main);">Nenhuma notícia encontrada para "{{ q }}".</h3>
+                        <p style="color: var(--text-muted);">Tente outros termos ou limpe a pesquisa.</p>
+                    {% else %}
+                        <h3 style="color: var(--text-main);">Nenhuma notícia disponível nesta categoria.</h3>
+                        <p style="color: var(--text-muted);">Fique atento às nossas atualizações em breve.</p>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
 

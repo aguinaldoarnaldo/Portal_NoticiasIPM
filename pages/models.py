@@ -47,6 +47,7 @@ class Evento(models.Model):
     descricao = models.TextField(blank=True, null=True, verbose_name='Descrição')
     vagas = models.IntegerField(default=50, verbose_name='Número de Vagas')
     exclusivo_alunos = models.BooleanField(default=True, verbose_name='Exclusivo para Alunos')
+    imagem = models.ImageField(upload_to='static/uploads/events/', blank=True, null=True, verbose_name='Imagem')
     criado_em = models.DateTimeField(auto_now_add=True)
 
     class Meta:

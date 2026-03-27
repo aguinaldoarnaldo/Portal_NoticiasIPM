@@ -3,7 +3,8 @@ from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib import messages
 from django.urls import reverse_lazy
-from .models import Noticia, Aluno, Evento
+from django.db.models import Q
+from .models import Noticia, Aluno, Evento, Categoria
 from .forms import AlunoRegistroForm, AlunoUpdateForm
 
 # Create your views here.
@@ -46,15 +47,34 @@ class NoticesView(ListView):
     paginate_by = 32
 
     def get_queryset(self):
-        # Filtrar notícias baseado no status de login
+        q = self.request.GET.get('q')
+        cat = self.request.GET.get('cat')
+        order = self.request.GET.get('order', 'latest')
+        
         if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
-            return Noticia.objects.filter(status=True)
-        return Noticia.objects.filter(status=True, exclusivo_alunos=False)
+            queryset = Noticia.objects.filter(status=True)
+        else:
+            queryset = Noticia.objects.filter(status=True, exclusivo_alunos=False)
+        
+        if q:
+            queryset = queryset.filter(Q(titulo__icontains=q) | Q(conteudo__icontains=q) | Q(subtitulo__icontains=q))
+        
+        if cat:
+            queryset = queryset.filter(categoria__categoria__iexact=cat)
+
+        if order == 'oldest':
+            queryset = queryset.order_by('publicado_em')
+        else:
+            queryset = queryset.order_by('-publicado_em')
+            
+        return queryset
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from .models import Categoria
         context['categorias'] = Categoria.objects.all()
+        context['q'] = self.request.GET.get('q', '')
+        context['categoria_ativa'] = self.request.GET.get('cat', '')
+        context['order'] = self.request.GET.get('order', 'latest')
         return context
 
 class NoticiaDetailView(DetailView):
@@ -83,15 +103,23 @@ class CategoryNoticeView(ListView):
 
     def get_queryset(self):
         category_name = self.kwargs.get('categoria_nome')
+        q = self.request.GET.get('q')
+        
         if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
-            return Noticia.objects.filter(status=True, categoria__categoria__iexact=category_name)
-        return Noticia.objects.filter(status=True, exclusivo_alunos=False, categoria__categoria__iexact=category_name)
+            queryset = Noticia.objects.filter(status=True, categoria__categoria__iexact=category_name)
+        else:
+            queryset = Noticia.objects.filter(status=True, exclusivo_alunos=False, categoria__categoria__iexact=category_name)
+            
+        if q:
+            queryset = queryset.filter(Q(titulo__icontains=q) | Q(corpo__icontains=q) | Q(subtitulo__icontains=q))
+            
+        return queryset.order_by('-publicado_em')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from .models import Categoria
         context['categoria_ativa'] = self.kwargs.get('categoria_nome')
         context['categorias'] = Categoria.objects.all()
+        context['q'] = self.request.GET.get('q', '')
         return context
 
 class AboutView(ListView):
@@ -116,14 +144,44 @@ class EventsView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        from .models import Evento
         from django.utils import timezone
         
         today = timezone.now().date()
+        q = self.request.GET.get('q')
+        status = self.request.GET.get('status', 'all')
+        order = self.request.GET.get('order', 'upcoming_first')
         
-        # Split events into upcoming and past
-        context['upcoming_events'] = Evento.objects.filter(data__gte=today).order_by('data')
-        context['past_events'] = Evento.objects.filter(data__lt=today).order_by('-data')
+        queryset = Evento.objects.all()
+        
+        if q:
+            queryset = queryset.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q))
+            context['q'] = q
+
+        if status == 'upcoming':
+            queryset = queryset.filter(data__gte=today)
+        elif status == 'past':
+            queryset = queryset.filter(data__lt=today)
+
+        upcoming_events = queryset.filter(data__gte=today)
+        past_events = queryset.filter(data__lt=today)
+        
+        if order == 'latest':
+            upcoming_events = upcoming_events.order_by('-data')
+            past_events = past_events.order_by('-data')
+        elif order == 'oldest':
+            upcoming_events = upcoming_events.order_by('data')
+            past_events = past_events.order_by('data')
+        else: # upcoming_first
+            upcoming_events = upcoming_events.order_by('data')
+            past_events = past_events.order_by('-data')
+            
+        context['upcoming_events'] = upcoming_events
+        context['past_events'] = past_events
+        context['status'] = status
+        context['order'] = order
+        
+        # Slider Banner - Top 5 upcoming events
+        context['banner_eventos'] = Evento.objects.filter(data__gte=today).order_by('data')[:5]
         
         return context
 
@@ -232,8 +290,8 @@ class InscreverEventoView(View):
         email = request.POST.get('email')
         telefone = request.POST.get('telefone')
         
-        if not nome or not email:
-            messages.error(request, 'Nome e Email são obrigatórios para a inscrição.')
+        if not nome or not email or not telefone:
+            messages.error(request, 'Nome, Email e Telefone são obrigatórios para a inscrição.')
             return redirect('pages:evento_detail', pk=evento.id)
             
         # Verificar vagas
