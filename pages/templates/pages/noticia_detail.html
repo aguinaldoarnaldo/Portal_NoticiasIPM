@@ -1,74 +1,338 @@
 {% extends 'pages/index.html' %}
 {% load static %}
 
-{% block title %}{{ noticia.titulo }} | IPM NEWS{% endblock %}
+{% block title %}{{ noticia.titulo }} | IPM NOTÍCIAS{% endblock %}
 
 {% block content %}
-<div class="detail-container">
-    <article class="news-detail-wrapper">
-        <header class="detail-header">
-            <span class="detail-badge">{{ noticia.categoria.categoria }}</span>
-            <h1 class="detail-title">{{ noticia.titulo }}</h1>
-            {% if noticia.subtitulo %}
-                <p class="detail-subtitle">{{ noticia.subtitulo }}</p>
-            {% endif %}
-            
-            <div class="detail-meta">
-                <span><i class="far fa-user"></i> {{ noticia.autor }}</span>
-                <span><i class="far fa-calendar-alt"></i> {{ noticia.publicado_em|date:"d M, Y" }}</span>
-                <span><i class="far fa-eye"></i> {{ noticia.cliques }} visualizações</span>
-            </div>
-        </header>
+<style>
+    /* Premium Detail Styles - Two Column Layout */
+    .detail-page-wrapper {
+        background: var(--primary-light);
+        padding: 4rem 0 6rem;
+        min-height: 100vh;
+    }
 
-        {% if noticia.imagem %}
-        <div class="detail-featured-image">
-            <img src="{{ noticia.imagem.url }}" alt="{{ noticia.titulo }}">
-        </div>
-        {% endif %}
+    .noticia-grid-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: grid;
+        grid-template-columns: 1fr 350px; /* Main content 1fr, Sidebar 350px */
+        gap: 3rem;
+        align-items: start;
+    }
 
-        <div class="detail-content">
-            {{ noticia.conteudo|safe }}
-        </div>
-        
-        <footer class="detail-footer">
-            <div class="share-box">
-                <span><i class="fas fa-share-alt"></i> PARTILHAR:</span>
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://api.whatsapp.com/send?text={{ noticia.titulo }} - {{ request.build_absolute_uri }}" target="_blank" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ noticia.titulo }}" target="_blank" title="Twitter"><i class="fab fa-twitter"></i></a>
-            </div>
-            
-            <a href="{% url 'pages:notice' %}" class="btn-back-news">
-                <i class="fas fa-arrow-left"></i> VOLTAR PARA NOTÍCIAS
-            </a>
-        </footer>
-    </article>
+    /* Left Column: Main Article */
+    .noticia-main-article {
+        background: white;
+        border-radius: 25px;
+        box-shadow: 0 15px 45px rgba(0, 51, 102, 0.05);
+        overflow: hidden;
+        border: 1px solid rgba(0, 51, 102, 0.03);
+    }
 
-    <!-- RELATED NEWS SECTION -->
-    {% if destaques %}
-    <section class="more-highlights">
-        <div class="section-divider">
-            <h2>MAIS DESTAQUES</h2>
-        </div>
-        
-        <div class="responsive-cards">
-            {% for destaque in destaques %}
-            <article class="news-card" onclick="window.location.href='{% url 'pages:noticia_detail' destaque.id %}'">
-                <img src="{% if destaque.imagem %}{{ destaque.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}"
-                     alt="{{ destaque.titulo }}" class="news-card-bg">
-                <div class="news-card-overlay">
-                    <h3 class="news-title">{{ destaque.titulo }}</h3>
-                    {% if destaque.subtitulo %}
-                        <p class="news-subtitle">({{ destaque.subtitulo }})</p>
-                    {% endif %}
-                    <button class="btn-saber-mais">
-                        SABER MAIS <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
-                    </button>
+    /* Image First */
+    .noticia-hero-image {
+        width: 100%;
+        max-height: 500px;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+
+    .noticia-hero-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .noticia-article-header {
+        padding: 3.5rem 4rem 2rem;
+    }
+
+    .noticia-category-pill {
+        display: inline-block;
+        background: rgba(0, 51, 102, 0.06);
+        color: var(--uan-blue);
+        padding: 0.4rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1.5rem;
+    }
+
+    .noticia-main-title {
+        font-size: 2.8rem;
+        font-weight: 800;
+        color: var(--uan-blue);
+        line-height: 1.2;
+        margin-bottom: 1.2rem;
+        letter-spacing: -1px;
+    }
+
+    .noticia-meta-info {
+        display: flex;
+        gap: 2rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .noticia-meta-info span {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .noticia-meta-info i {
+        color: var(--uan-yellow);
+    }
+
+    /* Content Body */
+    .noticia-rich-content {
+        padding: 0 4rem 4rem;
+        font-size: 1.15rem;
+        line-height: 1.8;
+        color: var(--text-main);
+    }
+
+    .noticia-rich-content p {
+        margin-bottom: 1.8rem;
+    }
+
+    /* Right Column: Sidebar Sticky */
+    .noticia-sidebar {
+        position: sticky;
+        top: 130px; /* Below the fixed header */
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+        border: 1px solid rgba(0, 51, 102, 0.02);
+    }
+
+    .sidebar-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: var(--uan-blue);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+    }
+
+    .sidebar-title::after {
+        content: '';
+        flex: 1;
+        height: 2px;
+        background: rgba(0, 51, 102, 0.05);
+    }
+
+    .mini-news-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .mini-news-item {
+        display: grid;
+        grid-template-columns: 80px 1fr;
+        gap: 1.2rem;
+        align-items: center;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .mini-news-item:hover {
+        transform: translateX(8px);
+    }
+
+    .mini-thumb {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .mini-thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .mini-content h4 {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--uan-blue);
+        line-height: 1.3;
+        margin-bottom: 0.4rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .mini-content span {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+    }
+
+    /* Action Footer in Article */
+    .noticia-article-footer {
+        padding: 2.5rem 4rem;
+        background: #fcfcfc;
+        border-top: 1px solid rgba(0,0,0,0.03);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .social-share-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .share-icon-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        color: var(--uan-blue);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+
+    .share-icon-btn:hover {
+        background: var(--uan-blue);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .btn-back-home {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0.7rem 1.4rem;
+        background: rgba(0, 51, 102, 0.05);
+        color: var(--uan-blue);
+        font-weight: 700;
+        border-radius: 50px;
+        font-size: 0.85rem;
+    }
+
+    /* Dark Mode */
+    [data-theme="dark"] .noticia-main-article,
+    [data-theme="dark"] .sidebar-card { background: #1a1a2e; border-color: rgba(255,255,255,0.05); }
+    [data-theme="dark"] .noticia-main-title { color: white; }
+    [data-theme="dark"] .noticia-rich-content { color: #d0d0d0; }
+    [data-theme="dark"] .mini-content h4 { color: #f0f0f0; }
+
+    /* Responsiveness */
+    @media (max-width: 1100px) {
+        .noticia-grid-container { grid-template-columns: 1fr; }
+        .noticia-sidebar { position: static; }
+    }
+
+    @media (max-width: 768px) {
+        .noticia-article-header, .noticia-rich-content, .noticia-article-footer { padding: 2rem; }
+        .noticia-main-title { font-size: 2rem; }
+        .noticia-article-footer { flex-direction: column; gap: 2rem; text-align: center; }
+    }
+</style>
+
+<div class="detail-page-wrapper">
+    <div class="noticia-grid-container">
+        <!-- Main Column -->
+        <main class="noticia-main-column">
+            <article class="noticia-main-article animate__animated animate__fadeIn">
+                <!-- Image on Top -->
+                {% if noticia.imagem %}
+                <div class="noticia-hero-image">
+                    <img src="{{ noticia.imagem.url }}" alt="{{ noticia.titulo }}">
                 </div>
+                {% endif %}
+
+                <header class="noticia-article-header">
+                    <div class="noticia-category-pill">{{ noticia.categoria.categoria }}</div>
+                    <h1 class="noticia-main-title">{{ noticia.titulo }}</h1>
+                    
+                    <div class="noticia-meta-info">
+                        <span><i class="fas fa-pen-nib"></i> {{ noticia.autor }}</span>
+                        <span><i class="fas fa-calendar-day"></i> {{ noticia.publicado_em|date:"d \d\e F, Y" }}</span>
+                        <span><i class="fas fa-chart-line"></i> {{ noticia.cliques|default:0 }} Cliques</span>
+                    </div>
+                </header>
+
+                <div class="noticia-rich-content">
+                    {% if noticia.subtitulo %}
+                        <p style="font-style: italic; color: var(--text-muted); font-size: 1.2rem; margin-bottom: 2rem;">"{{ noticia.subtitulo }}"</p>
+                    {% endif %}
+                    {{ noticia.conteudo|safe|linebreaks }}
+                </div>
+                
+                <footer class="noticia-article-footer">
+                    <div class="social-share-group">
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="share-icon-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="https://api.whatsapp.com/send?text={{ noticia.titulo }} - {{ request.build_absolute_uri }}" target="_blank" class="share-icon-btn"><i class="fab fa-whatsapp"></i></a>
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ noticia.titulo }}" target="_blank" class="share-icon-btn"><i class="fab fa-twitter"></i></a>
+                    </div>
+                    
+                    <a href="{% url 'pages:notice' %}" class="btn-back-home">
+                        <i class="fas fa-arrow-left"></i> VOLTAR À LISTA
+                    </a>
+                </footer>
             </article>
-            {% endfor %}
-        </div>
-    </section>
-    {% endif %}
+        </main>
+
+        <!-- Sidebar Column -->
+        <aside class="noticia-sidebar">
+            {% if destaques %}
+            <div class="sidebar-card">
+                <h3 class="sidebar-title"><i class="fas fa-bolt"></i> EM DESTAQUE</h3>
+                <div class="mini-news-list">
+                    {% for destaque in destaques %}
+                    <div class="mini-news-item" onclick="window.location.href='{% url 'pages:noticia_detail' destaque.id %}'">
+                        <div class="mini-thumb">
+                            <img src="{% if destaque.imagem %}{{ destaque.imagem.url }}{% else %}{% static 'images/card-fallback.jpg' %}{% endif %}" alt="{{ destaque.titulo }}">
+                        </div>
+                        <div class="mini-content">
+                            <h4>{{ destaque.titulo }}</h4>
+                            <span><i class="far fa-clock"></i> {{ destaque.publicado_em|date:"d/m/Y" }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Additional Sidebar Widget (Optional) -->
+            <div class="sidebar-card" style="background: var(--uan-blue); color: white;">
+                <h3 class="sidebar-title" style="color: white;">Fique Ligado</h3>
+                <p style="font-size: 0.9rem; opacity: 0.9; margin-bottom: 1rem;">Siga as nossas redes sociais e não perca nenhum aviso importante do IPM.</p>
+                <div style="display: flex; gap: 1rem;">
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: white; font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+        </aside>
+    </div>
 </div>
 {% endblock %}
+}

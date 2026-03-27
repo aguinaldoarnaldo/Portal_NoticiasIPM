@@ -14,8 +14,8 @@ class IndexView(ListView):
     context_object_name = 'noticias'
     
     def get_queryset(self):
-        # Se o usuário está logado e é aluno, mostra todas as notícias
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        # Se o usuário está logado e é aluno ou staff, mostra todas as notícias
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
             return Noticia.objects.filter(status=True)
         # Caso contrário, mostra apenas notícias não exclusivas
         return Noticia.objects.filter(status=True, exclusivo_alunos=False)
@@ -27,7 +27,7 @@ class IndexView(ListView):
         from django.utils import timezone
         
         # Get 5 latest news for banner slider
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
             context['banner_noticias'] = Noticia.objects.filter(status=True).order_by('-publicado_em')[:5]
         else:
             context['banner_noticias'] = Noticia.objects.filter(status=True, exclusivo_alunos=False).order_by('-publicado_em')[:5]
@@ -51,7 +51,7 @@ class NoticesView(ListView):
         cat = self.request.GET.get('cat')
         order = self.request.GET.get('order', 'latest')
         
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
             queryset = Noticia.objects.filter(status=True)
         else:
             queryset = Noticia.objects.filter(status=True, exclusivo_alunos=False)
@@ -87,7 +87,7 @@ class NoticiaDetailView(DetailView):
         from .models import Categoria
         
         # Verificar se o usuário pode ver notícias exclusivas
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
             context['destaques'] = Noticia.objects.filter(status=True).exclude(id=self.object.id).order_by('-publicado_em')[:3]
         else:
             context['destaques'] = Noticia.objects.filter(status=True, exclusivo_alunos=False).exclude(id=self.object.id).order_by('-publicado_em')[:3]
@@ -105,7 +105,7 @@ class CategoryNoticeView(ListView):
         category_name = self.kwargs.get('categoria_nome')
         q = self.request.GET.get('q')
         
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
             queryset = Noticia.objects.filter(status=True, categoria__categoria__iexact=category_name)
         else:
             queryset = Noticia.objects.filter(status=True, exclusivo_alunos=False, categoria__categoria__iexact=category_name)
@@ -151,7 +151,10 @@ class EventsView(ListView):
         status = self.request.GET.get('status', 'all')
         order = self.request.GET.get('order', 'upcoming_first')
         
-        queryset = Evento.objects.all()
+        if self.request.user.is_authenticated and (hasattr(self.request.user, 'aluno') or self.request.user.is_staff):
+            queryset = Evento.objects.all()
+        else:
+            queryset = Evento.objects.filter(exclusivo_alunos=False)
         
         if q:
             queryset = queryset.filter(Q(titulo__icontains=q) | Q(descricao__icontains=q))
@@ -226,15 +229,19 @@ class EventoDetailView(DetailView):
         context = super().get_context_data(**kwargs)
         from .models import InscricaoEvento
         
-        # Verificar se o usuário já está inscrito
-        if self.request.user.is_authenticated and hasattr(self.request.user, 'aluno'):
+        # Check if user is enrolled
+        is_student = hasattr(self.request.user, 'aluno')
+        if is_student:
             context['ja_inscrito'] = InscricaoEvento.objects.filter(
                 evento=self.object,
                 aluno=self.request.user.aluno
             ).exists()
         else:
             context['ja_inscrito'] = False
-            
+        
+        # Allow staff to see details even if exclusive
+        context['pode_ver_detalhes'] = not self.object.exclusivo_alunos or is_student or self.request.user.is_staff
+        
         return context
 
 from django.views import View
