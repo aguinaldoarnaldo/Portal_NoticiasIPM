@@ -251,13 +251,15 @@
         .ipm-premium-filter-controls {
             flex-direction: column !important;
             align-items: stretch !important;
-            padding: 1.5rem !important;
+            padding: 1rem !important;
+            gap: 1rem !important;
         }
         .ipm-premium-search-form {
             min-width: 100% !important;
         }
         .ipm-premium-dropdowns {
             flex-direction: column !important;
+            gap: 0.8rem !important;
         }
         .ipm-premium-dropdown {
             min-width: 100% !important;
@@ -270,9 +272,24 @@
             display: none;
             transform: none !important;
             box-shadow: none !important;
-            margin-top: 10px !important;
+            margin-top: 5px !important;
         }
     }
+
+    /* General responsive fixes for card container */
+    @media (max-width: 600px) {
+        .container {
+            width: 95% !important;
+            padding: 0 0.5rem !important;
+        }
+        .highlight-cards {
+            grid-template-columns: 1fr !important;
+            gap: 1.5rem !important;
+        }
+        .news-card {
+            min-height: 250px !important;
+        }
+}
 </style>
 
 <section class="news-banner">

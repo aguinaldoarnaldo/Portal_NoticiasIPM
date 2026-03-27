@@ -62,9 +62,17 @@ body {
 }
 
 .container {
-    width: 90%;
-    max-width: 1200px; /* Standard width */
+    width: 95%;
+    max-width: 1240px;
     margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .container {
+        width: 90%;
+        padding: 0 2rem;
+    }
 }
 
 a {
@@ -436,10 +444,16 @@ a {
 
 .highlight-cards {
     display: grid;
-    /* 4 columns on large screens, automatically stacks on smaller ones */
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 2rem;
     margin-bottom: 4rem;
+}
+
+@media (max-width: 600px) {
+    .highlight-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
 }
 
 .card {
@@ -917,12 +931,7 @@ a {
 }
 
 @media (max-width: 768px) {
-    /* Reduce container margins on mobile to push logo more to the left */
-    .container {
-        width: 100%; /* Was 95%, keeping tight */
-        padding-left: 0.20rem; /* Minimize padding */
-        padding-right: 0.20rem;
-    }
+    /* Standard container padding handled globally above */
 
     .hero-content {
         padding: 0 5%;
